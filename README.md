@@ -1,3 +1,3 @@
 # Shorthills TreeService PDF Generator Lambda Function
 
-github name: shts-pdf-gen 
+Lambda function to create Estimate and Invoice PDF files
