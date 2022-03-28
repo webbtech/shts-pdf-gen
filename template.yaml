@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  shts-pdf-gen
+  
+  SAM Template for shts-pdf-gen
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 5
+
+Parameters:
+  ParamBillTo:
+    Description: Required. Value of Tag key BillTo
+    Type: String
+    Default: 'ShorthillsTreeService'
+
+Resources:
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: Delete
+    DependsOn: PDFGeneratorFunction
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      # TODO: require Auth
+      #Auth:
+      Tags:
+        BillTo: !Ref ParamBillTo
+      GatewayResponses:
+        UNAUTHORIZED:
+          StatusCode: 401
+          ResponseTemplates: 
+              "application/json": '{ "message": $context.error.messageString }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Expose-Headers: "'WWW-Authenticate'"
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'*'"
+  
+      # TODO: require Domain
+      # Domain:
+      #   DomainName: 
+      #   CertificateArn: !Ref ApiCertificate
+      #   Route53:
+      #     HostedZoneId: ""
+      #     DistributionDomainName:
+      #       Value: !Sub: ""
+
+  PDFGeneratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: pdf
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Tracing: Active
+      # Policies:
+      
+      Events:
+        Ping:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref RestApi
+            Auth:
+              Authorizer: NONE
+
+      Environment:
+        Variables:
+          Stage: production
+      Tags:
+        BillTo: !Ref ParamBillTo
+
+Outputs:
+  ApiId:
+    Description: API ID
+    Value:
+      Ref: RestApi   
+  ApiURL:
+    Description: API URL
+    Value: ""
+  PDFGeneratorAPI:
+    Description: API Gateway endpoint URL for Prod environment for PDFGeneratorFunction
+    Value: !Sub ""     
+  PDFGeneratorFunction:
+    Description: "PDFGenerator Lambda function ARN"
+    Value: !GetAtt PDFGeneratorFunction.Arn
