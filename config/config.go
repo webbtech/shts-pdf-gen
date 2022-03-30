@@ -39,8 +39,9 @@ var defs = &defaults{}
 /**
 Steps to initializing:
 1. Unmarshal yaml defaults into config struct
-2. Fetch KMS parameters and overwrite
+2. Fetch SSM parameters and overwrite
 3. Fetch any environment vars and overwrite above
+4.
 The order of above is important
 */
 
@@ -53,13 +54,16 @@ func (c *Config) Init() (err error) {
 		return err
 	}
 
+	if err = c.setSSMParams(); err != nil {
+		return err
+	}
+
 	if err = c.setEnvVars(); err != nil {
 		return err
 	}
 
-	if err = c.setSSMParams(); err != nil {
-		return err
-	}
+	c.setDBConnectString()
+	c.setFinal()
 
 	return err
 }
@@ -76,9 +80,19 @@ func (c *Config) SetStageEnv(env string) (err error) {
 }
 
 // GetMongoConnectURL method
-/* func (c *Config) GetMongoConnectURL() string {
-	return c.DBConnectURL
-} */
+func (c *Config) GetMongoConnectString() string {
+	return c.config.DbConnectString
+}
+
+// GetDbName method
+func (c *Config) GetDbName() string {
+	return c.config.DbName
+}
+
+// GetAwsRegion method
+func (c *Config) GetAwsRegion() string {
+	return c.config.AwsRegion
+}
 
 // ========================== Private Methods =============================== //
 
@@ -87,6 +101,9 @@ func (c *Config) setDefaults() (err error) {
 	if c.DefaultsFilePath == "" {
 		dir, _ := os.Getwd()
 		c.DefaultsFilePath = path.Join(dir, defaultFileName)
+		if _, err = os.Stat(c.DefaultsFilePath); os.IsNotExist(err) {
+			return err
+		}
 	}
 
 	file, err := ioutil.ReadFile(c.DefaultsFilePath)
@@ -201,7 +218,7 @@ func (c *Config) setDBConnectString() {
 }
 
 // Copies required fields from the defaults to the Config struct
-func (c *Config) setFinal() (err error) {
+func (c *Config) setFinal() {
 	c.AwsRegion = defs.AwsRegion
-	return err
+	c.DbName = defs.DbName
 }

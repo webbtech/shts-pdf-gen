@@ -17,7 +17,7 @@ import (
 // Stage variable
 var Stage string
 
-var ValidTypes = []string{"estimate", "invoice"}
+var ValidRequestTypes = []string{"estimate", "invoice"}
 
 // PDF struct
 type PDF struct {
@@ -27,10 +27,10 @@ type PDF struct {
 }
 
 const (
-	ERR_INVALID_TYPE         = "Invalid PDF type in input"
-	ERR_MISSING_NUMBER       = "Missing Estimate number in input"
+	ERR_INVALID_TYPE         = "Invalid request type in input"
+	ERR_MISSING_NUMBER       = "Missing estimate number in input"
 	ERR_MISSING_REQUEST_BODY = "Missing request body"
-	ERR_MISSING_TYPE         = "Missing PDF type in input"
+	ERR_MISSING_TYPE         = "Missing request type in input"
 )
 
 // ========================== Public Methods =============================== //
@@ -98,14 +98,14 @@ func (p *PDF) validateInput() (err *lerrors.StdError) {
 		inputErrs = append(inputErrs, ERR_MISSING_NUMBER)
 	}
 
-	if p.input.FileType == nil {
+	if p.input.RequestType == nil {
 		inputErrs = append(inputErrs, ERR_MISSING_TYPE)
 	}
 
-	if p.input.FileType != nil {
-		_, found := findString(ValidTypes, *p.input.FileType)
+	if p.input.RequestType != nil {
+		_, found := findString(ValidRequestTypes, *p.input.RequestType)
 		if !found {
-			errStr := fmt.Sprintf(ERR_INVALID_TYPE+": \"%s\"", *p.input.FileType)
+			errStr := fmt.Sprintf(ERR_INVALID_TYPE+": \"%s\"", *p.input.RequestType)
 			inputErrs = append(inputErrs, errStr)
 		}
 	}

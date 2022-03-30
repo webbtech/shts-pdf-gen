@@ -16,10 +16,6 @@ func TestInitConfig(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Expected null error received: %s", err)
 		}
-
-		// if cfg.Stage != ProdEnv {
-		// 	t.Fatalf("Expected Stage value should be: %s, have: %s", ProdEnv, cfg.Stage)
-		// }
 	})
 }
 
@@ -145,16 +141,20 @@ func TestSetDbConnectString(t *testing.T) {
 	})
 }
 
-func TestSetFinal(t *testing.T) {
+func TestPublicGetters(t *testing.T) {
 	cfg = &Config{}
 	cfg.setDefaults()
 	cfg.setSSMParams()
 
-	t.Run("complete config struct population", func(t *testing.T) {
-		cfg.setFinal()
-		expectAwsRegion := defs.AwsRegion
-		if expectAwsRegion != cfg.config.AwsRegion {
-			t.Fatalf("config.AwsRegion should be %s, have: %s", expectAwsRegion, cfg.config.AwsRegion)
+	t.Run("GetDbName", func(t *testing.T) {
+		if cfg.GetDbName() != cfg.config.DbName {
+			t.Fatalf("cfg.GetDbName() should be %s, have: %s", cfg.GetDbName(), cfg.config.DbName)
+		}
+	})
+
+	t.Run("GetAwsRegion", func(t *testing.T) {
+		if cfg.GetAwsRegion() != cfg.config.AwsRegion {
+			t.Fatalf("cfg.GetAwsRegion() should be %s, have: %s", cfg.GetAwsRegion(), cfg.config.AwsRegion)
 		}
 	})
 }

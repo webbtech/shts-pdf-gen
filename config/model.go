@@ -13,5 +13,6 @@ type defaults struct {
 type config struct {
 	AwsRegion       string
 	DbConnectString string
+	DbName          string
 	Stage           StageEnvironment
 }
