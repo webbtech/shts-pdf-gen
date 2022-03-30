@@ -43,13 +43,20 @@ func (p *PDF) process() {
 	var statusCode int = 201
 
 	json.Unmarshal([]byte(p.request.Body), &p.input)
+	// Validate input
+	err := p.validateInput()
+	if err != nil {
+		errors.As(err, &stdError)
+	}
 
-	// validate input
+	// Fetch DB Record
 	if stdError == nil {
-		err := p.validateInput()
-		if err != nil {
-			errors.As(err, &stdError)
-		}
+
+	}
+
+	// Generate PDF file
+	if stdError == nil {
+
 	}
 
 	// Process any error

@@ -1,0 +1,7 @@
+AwsRegion: "ca-central-1"
+DbCluster: "cluster0.q0zlz.mongodb.net"
+DbName: ""
+DbPassword: ""
+DbUser: "main"
+SsmPath: "shts-pdf-gen"
+Stage: "prod"

@@ -1,6 +1,7 @@
 package model
 
-type PdfRequest struct {
-	EstimateNumber *int    `json:"number"`
-	FileType       *string `json:"type"`
+// DbHandler interface
+type DbHandler interface {
+	Close()
+	FetchEstimate(string) (*Estimate, error)
 }
