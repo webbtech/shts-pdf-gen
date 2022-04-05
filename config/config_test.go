@@ -141,6 +141,22 @@ func TestSetDbConnectString(t *testing.T) {
 	})
 }
 
+func TestSetCompanyInfo(t *testing.T) {
+	cfg = &Config{}
+	cfg.setDefaults()
+
+	t.Run("CompanyInfo struct is properly set", func(t *testing.T) {
+		cfg.setCompanyInfo()
+		if cfg.companyInfo != cfg.GetCompanyInfo() {
+			t.Fatalf("GetCompanyInfo should be: %+v, have: %+v", cfg.companyInfo, cfg.GetCompanyInfo())
+		}
+
+		if cfg.GetCompanyInfo().Domain != defs.CoDomain {
+			t.Fatalf("Domain should be: %s, have: %s", cfg.GetCompanyInfo().Domain, defs.CoDomain)
+		}
+	})
+}
+
 func TestPublicGetters(t *testing.T) {
 	cfg = &Config{}
 	cfg.setDefaults()

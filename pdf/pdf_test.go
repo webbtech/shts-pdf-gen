@@ -17,6 +17,7 @@ const (
 // PdfSuite struct
 type PdfSuite struct {
 	suite.Suite
+	cfg            *config.Config
 	estimateRecord *model.Estimate
 	requestType    string
 	db             model.DbHandler
@@ -24,11 +25,11 @@ type PdfSuite struct {
 
 // SetupTest method
 func (s *PdfSuite) SetupTest() {
-	cfg := &config.Config{DefaultsFilePath: defaultsFp}
-	err := cfg.Init()
+	s.cfg = &config.Config{DefaultsFilePath: defaultsFp}
+	err := s.cfg.Init()
 	s.NoError(err)
 
-	s.db, err = mongo.NewDb(cfg.GetMongoConnectString(), cfg.GetDbName())
+	s.db, err = mongo.NewDb(s.cfg.GetMongoConnectString(), s.cfg.GetDbName())
 	s.NoError(err)
 
 	s.estimateRecord, err = s.db.FetchEstimate(estimateNum)
@@ -38,7 +39,7 @@ func (s *PdfSuite) SetupTest() {
 // TestInit method
 func (s *PdfSuite) TestNew() {
 	s.requestType = "estimate"
-	p, err := New(s.requestType, s.estimateRecord)
+	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
 	// fmt.Printf("p: %+v\n", p)
 	p.OutputToDisk("../tmp")

@@ -19,6 +19,7 @@ import (
 type Config struct {
 	config
 	DefaultsFilePath string
+	companyInfo      *companyInfo
 }
 
 // StageEnvironment string
@@ -63,6 +64,7 @@ func (c *Config) Init() (err error) {
 	}
 
 	c.setDBConnectString()
+	c.setCompanyInfo()
 	c.setFinal()
 
 	return err
@@ -92,6 +94,11 @@ func (c *Config) GetDbName() string {
 // GetAwsRegion method
 func (c *Config) GetAwsRegion() string {
 	return c.config.AwsRegion
+}
+
+// GetCompanyInfo method
+func (c *Config) GetCompanyInfo() *companyInfo {
+	return c.companyInfo
 }
 
 // ========================== Private Methods =============================== //
@@ -215,6 +222,16 @@ func (c *Config) setSSMParams() (err error) {
 // should look like: mongodb+srv://<defs.DbUser>:<defs.DbPassword>@<defs.DbCluster>/<defs.DbName>?retryWrites=true&w=majority
 func (c *Config) setDBConnectString() {
 	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", defs.DbUser, defs.DbPassword, defs.DbCluster, defs.DbName)
+}
+
+func (c *Config) setCompanyInfo() {
+	c.companyInfo = &companyInfo{
+		Domain:  defs.CoDomain,
+		Email:   defs.CoEmail,
+		HST:     defs.HST,
+		LogoURI: defs.LogoURI,
+		Phone:   defs.CoPhone,
+	}
 }
 
 // Copies required fields from the defaults to the Config struct

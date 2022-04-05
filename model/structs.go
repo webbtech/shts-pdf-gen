@@ -35,6 +35,7 @@ type Estimate struct {
 	CustomerNotes string               `bson:"customerNotes" json:"customerNotes"`
 	Date          time.Time            `bson:"date" json:"date"`
 	Discount      float64              `bson:"discount" json:"discount"`
+	HST           int                  `bson:"HST" json:"HST"`
 	Items         []EstimateItem       `json:"items"`
 	ItemsCost     float64              `bson:"itemsCost" json:"itemsCost"`
 	ItemsCostNet  float64              `bson:"itemsCostNet" json:"itemsCostNet"`
