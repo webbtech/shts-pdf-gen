@@ -7,7 +7,6 @@ import (
 )
 
 type Ping struct {
-	request  events.APIGatewayProxyRequest
 	response events.APIGatewayProxyResponse
 }
 

@@ -69,6 +69,14 @@ Resources:
             RestApiId: !Ref RestApi
             Auth:
               Authorizer: NONE
+        Pdf:
+          Type: Api
+          Properties:
+            Path: /pdf
+            Method: POST
+            RestApiId: !Ref RestApi
+            Auth:
+              Authorizer: NONE
 
       Environment:
         Variables:

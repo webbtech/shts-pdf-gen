@@ -2,12 +2,13 @@ package pdf
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/webbtech/shts-pdf-gen/config"
 	"github.com/webbtech/shts-pdf-gen/model"
-	"github.com/webbtech/shts-pdf-gen/mongo"
+	"github.com/webbtech/shts-pdf-gen/mongodb"
 )
 
 const (
@@ -28,11 +29,13 @@ type PdfSuite struct {
 
 // SetupTest method
 func (s *PdfSuite) SetupTest() {
+	os.Setenv("Stage", "test")
+
 	s.cfg = &config.Config{DefaultsFilePath: defaultsFp}
 	err := s.cfg.Init()
 	s.NoError(err)
 
-	s.db, err = mongo.NewDb(s.cfg.GetMongoConnectString(), s.cfg.GetDbName())
+	s.db, err = mongodb.NewDb(s.cfg.GetMongoConnectString(), s.cfg.GetDbName())
 	s.NoError(err)
 
 	s.estimateRecord, err = s.db.FetchEstimate(estimateNum)
@@ -45,7 +48,6 @@ func (s *PdfSuite) TestEstimateToDisk() {
 	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
 	p.OutputToDisk("../tmp")
-	// suite.IsType(&model.Customer{}, q.)
 }
 
 // TestInvoiceToDisk method

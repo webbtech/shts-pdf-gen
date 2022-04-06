@@ -133,6 +133,7 @@ func (c *Config) validateStage() (err error) {
 
 	switch defs.Stage {
 	case "dev":
+	case "development":
 		c.Stage = DevEnv
 	case "stage":
 		c.Stage = StageEnv

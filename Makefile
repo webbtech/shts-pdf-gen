@@ -7,9 +7,10 @@ include .env
 
 build:
 	sam build
+	@cp ./config/defaults.yml ./.aws-sam/build/PDFGeneratorFunction/
 
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-start-api.html
-local-api:
+local-api: build
 	sam local start-api --env-vars env.json --profile $(PROFILE)
 	#  -p 3100
 

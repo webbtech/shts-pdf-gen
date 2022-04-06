@@ -14,16 +14,17 @@ import (
 	"github.com/webbtech/shts-pdf-gen/model"
 )
 
-// Stage variable
-var Stage string
+var (
+	Stage             string
+	ValidRequestTypes = []string{"estimate", "invoice"}
+)
 
-var ValidRequestTypes = []string{"estimate", "invoice"}
-
-// PDF struct
-type PDF struct {
-	request  events.APIGatewayProxyRequest
-	response events.APIGatewayProxyResponse
+// Pdf struct
+type Pdf struct {
+	Db       model.DbHandler
 	input    *model.PdfRequest
+	Request  events.APIGatewayProxyRequest
+	response events.APIGatewayProxyResponse
 }
 
 const (
@@ -35,14 +36,22 @@ const (
 
 // ========================== Public Methods =============================== //
 
-func (p *PDF) process() {
+func (p *Pdf) Response(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	p.process()
+	return p.response, nil
+}
+
+// ========================== Private Methods ============================== //
+
+// TODO: maybe we should return errors???
+func (p *Pdf) process() {
 
 	rb := responseBody{}
 	var body []byte
 	var stdError *lerrors.StdError
 	var statusCode int = 201
 
-	json.Unmarshal([]byte(p.request.Body), &p.input)
+	json.Unmarshal([]byte(p.Request.Body), &p.input)
 
 	// Validate input
 	if err := p.validateInput(); err != nil {
@@ -51,7 +60,9 @@ func (p *PDF) process() {
 
 	// Fetch DB Record
 	if stdError == nil {
-
+		estimateRecord, err := p.Db.FetchEstimate(*p.input.EstimateNumber)
+		fmt.Printf("estimateRecord: %+v\n", estimateRecord)
+		fmt.Printf("err: %+v\n", err)
 	}
 
 	// Generate PDF file
@@ -79,9 +90,7 @@ func (p *PDF) process() {
 	}
 }
 
-// ========================== Private Methods ============================== //
-
-func (p *PDF) validateInput() (err *lerrors.StdError) {
+func (p *Pdf) validateInput() (err *lerrors.StdError) {
 	var inputErrs []string
 
 	if p.input == nil {
@@ -96,7 +105,6 @@ func (p *PDF) validateInput() (err *lerrors.StdError) {
 
 	if p.input.EstimateNumber == nil {
 		inputErrs = append(inputErrs, ERR_MISSING_NUMBER)
-		fmt.Printf("call EstimateNumber error: %+v\n", inputErrs)
 	}
 
 	if p.input.RequestType == nil {
