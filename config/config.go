@@ -226,11 +226,14 @@ func (c *Config) setDBConnectString() {
 
 func (c *Config) setCompanyInfo() {
 	c.companyInfo = &companyInfo{
-		Domain:  defs.CoDomain,
-		Email:   defs.CoEmail,
-		HST:     defs.HST,
-		LogoURI: defs.LogoURI,
-		Phone:   defs.CoPhone,
+		Address1: defs.CoAddress1,
+		Address2: defs.CoAddress2,
+		Domain:   defs.CoDomain,
+		Email:    defs.CoEmail,
+		HST:      defs.HST,
+		LogoURI:  defs.LogoURI,
+		Name:     defs.CoName,
+		Phone:    defs.CoPhone,
 	}
 }
 
@@ -238,4 +241,5 @@ func (c *Config) setCompanyInfo() {
 func (c *Config) setFinal() {
 	c.AwsRegion = defs.AwsRegion
 	c.DbName = defs.DbName
+	c.S3Bucket = defs.S3Bucket
 }

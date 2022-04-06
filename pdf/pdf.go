@@ -1,11 +1,13 @@
 package pdf
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"path"
 
 	"github.com/jung-kurt/gofpdf"
+	"github.com/webbtech/shts-pdf-gen/awsservices"
 	"github.com/webbtech/shts-pdf-gen/config"
 	"github.com/webbtech/shts-pdf-gen/model"
 )
@@ -26,6 +28,11 @@ const (
 	DEFAULT_LINE_HEIGHT = 4.5
 )
 
+var (
+	defFontSize float64
+	defLnHt     float64
+)
+
 // New function
 func New(cfg *config.Config, requestType string, record *model.Estimate) (p *Pdf, err error) {
 
@@ -39,12 +46,12 @@ func New(cfg *config.Config, requestType string, record *model.Estimate) (p *Pdf
 
 	switch p.requestType {
 	case "estimate":
+		p.outputName = fmt.Sprintf("%s-%d.pdf", "est", p.record.Number)
 		p.file, err = p.Estimate()
 	case "invoice":
+		p.outputName = fmt.Sprintf("%s-%d.pdf", "inv", p.record.Number)
 		p.file, err = p.Invoice()
 	}
-
-	p.outputName = fmt.Sprintf("%s-%d.pdf", p.requestType, p.record.Number)
 
 	return p, err
 }
@@ -58,8 +65,23 @@ func (p *Pdf) OutputToDisk(dir string) (err error) {
 	return err
 }
 
-// GetLogo method
-func (p *Pdf) GetLogo(url string) (gofpdf.ImageOptions, bool) {
+// SaveToS3 method
+func (p *Pdf) SaveToS3() (location string, err error) {
+
+	s3Object := path.Join(p.requestType, p.outputName)
+	var buf bytes.Buffer
+	if err := p.file.Output(&buf); err != nil {
+		return "", err
+	}
+	location, err = awsservices.PutFile(s3Object, &buf, p.cfg)
+
+	return location, err
+}
+
+// ========================== Private Methods =============================== //
+
+// getLogo method
+func (p *Pdf) getLogo(url string) (gofpdf.ImageOptions, bool) {
 	var (
 		rsp     *http.Response
 		tp      string
@@ -82,7 +104,3 @@ func (p *Pdf) GetLogo(url string) (gofpdf.ImageOptions, bool) {
 	}
 	return imgInfo, true
 }
-
-// SaveToS3 method
-
-// ========================== Private Methods =============================== //

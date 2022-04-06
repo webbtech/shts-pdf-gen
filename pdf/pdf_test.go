@@ -1,6 +1,7 @@
 package pdf
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -13,6 +14,8 @@ const (
 	defaultsFp  = "../config/defaults.yml"
 	estimateNum = 1011
 )
+
+// to test and preview, do something like: go test -run ^TestPdfSuite$ github.com/webbtech/shts-pdf-gen/pdf && open -a Preview ./tmp/estimate-1011.pdf
 
 // PdfSuite struct
 type PdfSuite struct {
@@ -36,14 +39,48 @@ func (s *PdfSuite) SetupTest() {
 	s.NoError(err)
 }
 
-// TestInit method
-func (s *PdfSuite) TestNew() {
+// TestEstimateToDisk method
+func (s *PdfSuite) TestEstimateToDisk() {
 	s.requestType = "estimate"
 	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
-	// fmt.Printf("p: %+v\n", p)
 	p.OutputToDisk("../tmp")
 	// suite.IsType(&model.Customer{}, q.)
+}
+
+// TestInvoiceToDisk method
+func (s *PdfSuite) TestInvoiceToDisk() {
+	s.requestType = "invoice"
+	p, err := New(s.cfg, s.requestType, s.estimateRecord)
+	s.NoError(err)
+	p.OutputToDisk("../tmp")
+	// suite.IsType(&model.Customer{}, q.)
+}
+
+// TestEstimateToS3 method
+func (s *PdfSuite) TestEstimateToS3() {
+	s.requestType = "estimate"
+	p, err := New(s.cfg, s.requestType, s.estimateRecord)
+	s.NoError(err)
+
+	l, err := p.SaveToS3()
+	s.NoError(err)
+
+	expectLocation := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s/%s", s.cfg.S3Bucket, s.cfg.AwsRegion, s.requestType, p.outputName)
+	s.Equal(expectLocation, l)
+}
+
+// TestInvoiceToS3 method
+func (s *PdfSuite) TestInvoiceToS3() {
+	s.requestType = "invoice"
+	p, err := New(s.cfg, s.requestType, s.estimateRecord)
+	s.NoError(err)
+
+	l, err := p.SaveToS3()
+	s.NoError(err)
+
+	expectLocation := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s/%s", s.cfg.S3Bucket, s.cfg.AwsRegion, s.requestType, p.outputName)
+	s.Equal(expectLocation, l)
 }
 
 // TestPdfSuite method
