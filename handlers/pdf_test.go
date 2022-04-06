@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -16,7 +17,7 @@ func TestValidateRequest(t *testing.T) {
 		err := p.validateInput()
 
 		if err.Msg != expectedErr {
-			t.Fatalf("Expected error should be: %s, have:%s", expectedErr, err.Msg)
+			t.Fatalf("Expected error should be: %s, have: %s", expectedErr, err.Msg)
 		}
 	})
 
@@ -28,25 +29,27 @@ func TestValidateRequest(t *testing.T) {
 		expectedErr := ERR_MISSING_TYPE
 		err := p.validateInput()
 		if err.Msg != expectedErr {
-			t.Fatalf("Expected error should be: %s, have:%s", expectedErr, err.Msg)
+			t.Fatalf("Expected error should be: %s, have: %s", expectedErr, err.Msg)
 		}
 	})
 
 	t.Run("Missing number input", func(t *testing.T) {
 		p := &PDF{}
-		requestBody := `{"type": "estimate"}`
+		requestBody := `{"requestType": "estimate"}`
 		json.Unmarshal([]byte(requestBody), &p.input)
 
 		expectedErr := ERR_MISSING_NUMBER
 		err := p.validateInput()
-		if err.Msg != expectedErr {
-			t.Fatalf("Expected error should be: %s, have:%s", expectedErr, err.Msg)
+		fmt.Printf("err.Msg: %+v\n", err.Msg)
+		fmt.Printf("expectedErr: %+v\n", expectedErr)
+		if expectedErr != err.Msg {
+			t.Fatalf("Expected error should be: %s, have: %s", expectedErr, err.Msg)
 		}
 	})
 
 	t.Run("Invalid type input", func(t *testing.T) {
 		p := &PDF{}
-		requestBody := `{"number": 900, "type": "estimat"}`
+		requestBody := `{"number": 900, "requestType": "estimat"}`
 		json.Unmarshal([]byte(requestBody), &p.input)
 
 		err := p.validateInput()

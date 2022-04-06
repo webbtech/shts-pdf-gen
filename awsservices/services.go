@@ -6,14 +6,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/webbtech/shts-pdf-gen/config"
 )
 
 // PutFile function
-func PutFile(fn string, buf *bytes.Buffer, cfg *config.Config) (location string, err error) {
+func PutFile(buf *bytes.Buffer, fileObject, awsRegion, s3Bucket string) (location string, err error) {
 
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(cfg.AwsRegion),
+		Region: aws.String(awsRegion),
 	})
 	if err != nil {
 		return "", err
@@ -21,8 +20,8 @@ func PutFile(fn string, buf *bytes.Buffer, cfg *config.Config) (location string,
 
 	uploader := s3manager.NewUploader(sess)
 	res, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket:             aws.String(cfg.S3Bucket),
-		Key:                aws.String(fn),
+		Bucket:             aws.String(s3Bucket),
+		Key:                aws.String(fileObject),
 		Body:               buf,
 		ContentType:        aws.String("application/pdf"),
 		ContentDisposition: aws.String("attachment"),

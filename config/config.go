@@ -91,11 +91,6 @@ func (c *Config) GetDbName() string {
 	return c.config.DbName
 }
 
-// GetAwsRegion method
-func (c *Config) GetAwsRegion() string {
-	return c.config.AwsRegion
-}
-
 // GetCompanyInfo method
 func (c *Config) GetCompanyInfo() *companyInfo {
 	return c.companyInfo

@@ -68,12 +68,12 @@ func (p *Pdf) OutputToDisk(dir string) (err error) {
 // SaveToS3 method
 func (p *Pdf) SaveToS3() (location string, err error) {
 
-	s3Object := path.Join(p.requestType, p.outputName)
+	fileObject := path.Join(p.requestType, p.outputName)
 	var buf bytes.Buffer
 	if err := p.file.Output(&buf); err != nil {
 		return "", err
 	}
-	location, err = awsservices.PutFile(s3Object, &buf, p.cfg)
+	location, err = awsservices.PutFile(&buf, fileObject, p.cfg.AwsRegion, p.cfg.S3Bucket)
 
 	return location, err
 }

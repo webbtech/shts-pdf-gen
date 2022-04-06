@@ -167,10 +167,4 @@ func TestPublicGetters(t *testing.T) {
 			t.Fatalf("cfg.GetDbName() should be %s, have: %s", cfg.GetDbName(), cfg.config.DbName)
 		}
 	})
-
-	t.Run("GetAwsRegion", func(t *testing.T) {
-		if cfg.GetAwsRegion() != cfg.config.AwsRegion {
-			t.Fatalf("cfg.GetAwsRegion() should be %s, have: %s", cfg.GetAwsRegion(), cfg.config.AwsRegion)
-		}
-	})
 }

@@ -28,7 +28,7 @@ type PDF struct {
 
 const (
 	ERR_INVALID_TYPE         = "Invalid request type in input"
-	ERR_MISSING_NUMBER       = "Missing estimate number in input"
+	ERR_MISSING_NUMBER       = "Missing request number in input"
 	ERR_MISSING_REQUEST_BODY = "Missing request body"
 	ERR_MISSING_TYPE         = "Missing request type in input"
 )
@@ -43,9 +43,9 @@ func (p *PDF) process() {
 	var statusCode int = 201
 
 	json.Unmarshal([]byte(p.request.Body), &p.input)
+
 	// Validate input
-	err := p.validateInput()
-	if err != nil {
+	if err := p.validateInput(); err != nil {
 		errors.As(err, &stdError)
 	}
 
@@ -96,6 +96,7 @@ func (p *PDF) validateInput() (err *lerrors.StdError) {
 
 	if p.input.EstimateNumber == nil {
 		inputErrs = append(inputErrs, ERR_MISSING_NUMBER)
+		fmt.Printf("call EstimateNumber error: %+v\n", inputErrs)
 	}
 
 	if p.input.RequestType == nil {
