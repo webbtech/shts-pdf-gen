@@ -122,7 +122,7 @@ func (e *estimate) header() {
 	file.MoveTo(162, 19)
 	file.SetFont("Arial", "", defFontSize)
 	file.SetTextColor(0, 0, 0)
-	file.CellFormat(0, 5, record.Date.Format(DATE_FMT_SHRT), "", 2, "", false, 0, "")
+	file.CellFormat(0, 5, record.CreatedAt.Format(DATE_FMT_SHRT), "", 2, "", false, 0, "")
 
 	file.MoveTo(138, 28)
 	file.SetFont("Arial", "", defFontSize)
@@ -180,6 +180,7 @@ func (e *estimate) items() {
 		return
 	}
 
+	// TODO: create mock function for this
 	// Test page break for multi-page estimate
 	/* record.Items = append(record.Items, record.Items[0])
 	record.Items = append(record.Items, record.Items[1])
@@ -194,7 +195,7 @@ func (e *estimate) items() {
 
 	file.SetFont("Arial", "", defFontSize)
 	file.SetTextColor(0, 0, 0)
-	file.SetFillColor(100, 100, 100) // TODO: is this required? or can we set globally
+	file.SetFillColor(100, 100, 100)
 
 	for idx, i := range record.Items {
 		file.Ln(3)
@@ -288,7 +289,7 @@ func (e *estimate) footer() {
 
 	record := e.p.record
 	file := e.p.file
-	expireDate := record.Date.AddDate(0, 0, 90)
+	expireDate := record.CreatedAt.AddDate(0, 0, 90)
 
 	file.Ln(6)
 

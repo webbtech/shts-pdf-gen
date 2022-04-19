@@ -109,11 +109,9 @@ func (db *Mdb) getEstimate(e *model.Estimate, estimateNum int) (err error) {
 	}
 
 	col := db.db.Collection(colEstimate)
-	// objectId, err := primitive.ObjectIDFromHex(estimateId)
 	filter := bson.D{primitive.E{Key: "number", Value: estimateNum}}
 
-	err = col.FindOne(context.Background(), filter).Decode(&e)
-	if err != nil {
+	if err = col.FindOne(context.Background(), filter).Decode(&e); err != nil {
 		return err
 	}
 

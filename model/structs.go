@@ -30,21 +30,22 @@ type Customer struct {
 
 type Estimate struct {
 	ID            primitive.ObjectID   `bson:"_id" json:"id"`
+	CreatedAt     time.Time            `bson:"createdAt" json:"createdAt"`
 	Customer      *Customer            `bson:"customerRecord" json:"customerRecord"`
 	CustomerId    primitive.ObjectID   `bson:"customer" json:"customerId"`
 	CustomerNotes string               `bson:"customerNotes" json:"customerNotes"`
-	Date          time.Time            `bson:"date" json:"date"`
 	Discount      float64              `bson:"discount" json:"discount"`
 	HST           int                  `bson:"HST" json:"HST"`
+	ItemIds       []primitive.ObjectID `bson:"estimateItems" json:"itemIds"`
 	Items         []EstimateItem       `json:"items"`
 	ItemsCost     float64              `bson:"itemsCost" json:"itemsCost"`
 	ItemsCostNet  float64              `bson:"itemsCostNet" json:"itemsCostNet"`
-	ItemIds       []primitive.ObjectID `bson:"estimateItems" json:"itemIds"`
 	JobNotes      string               `bson:"jobNotes" json:"jobNotes"`
 	Number        int64                `bson:"number" json:"number"`
 	PaidStatus    string               `bson:"paidStatus" json:"paidStatus"`
 	Tax           float64              `bson:"tax" json:"tax"`
 	TotalCost     float64              `bson:"totalCost" json:"totalCost"`
+	UpdatedAt     time.Time            `bson:"updatedAt" json:"updatedAt"`
 }
 
 type EstimateItem struct {

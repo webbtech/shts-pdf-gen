@@ -3,7 +3,9 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"reflect"
@@ -100,6 +102,8 @@ func (c *Config) GetCompanyInfo() *companyInfo {
 
 func (c *Config) setDefaults() (err error) {
 
+	var file []byte
+
 	if c.DefaultsFilePath == "" {
 		dir, _ := os.Getwd()
 		c.DefaultsFilePath = path.Join(dir, defaultFileName)
@@ -108,9 +112,23 @@ func (c *Config) setDefaults() (err error) {
 		}
 	}
 
-	file, err := ioutil.ReadFile(c.DefaultsFilePath)
-	if err != nil {
-		return err
+	// Check if remote file or local and handle accordingly
+	if strings.HasPrefix(c.DefaultsFilePath, "https") {
+		res, err := http.Get(c.DefaultsFilePath)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+
+		file, err = io.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+	} else {
+		file, err = ioutil.ReadFile(c.DefaultsFilePath)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = yaml.Unmarshal([]byte(file), &defs)

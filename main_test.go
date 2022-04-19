@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-func TestHandler(t *testing.T) {
+func TestPingHandler(t *testing.T) {
 
 	os.Setenv("Stage", "test")
 
@@ -46,6 +46,32 @@ func TestEnvVars(t *testing.T) {
 		p, exists := os.LookupEnv("PARAM1")
 		if !exists {
 			t.Fatalf("Expected value for PARAM1 to be: %s", p)
+		}
+	})
+}
+
+// TODO: here we should use mocks to avoid having to use the mongodb and Pdf packages
+func TestPdfHandler(t *testing.T) {
+	os.Setenv("Stage", "test")
+
+	var msg string
+	t.Run("Successful pdf", func(t *testing.T) {
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(201)
+		}))
+		defer ts.Close()
+
+		requestBody := `{"number": 1011, "requestType": "estimate"}`
+		r, err := handler(events.APIGatewayProxyRequest{Path: "/pdf", Body: requestBody})
+
+		expectedMsg := "Success"
+		msg = extractMessage(r.Body)
+		if msg != expectedMsg {
+			t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
+		}
+		if err != nil {
+			t.Fatal("Everything should be ok")
 		}
 	})
 }

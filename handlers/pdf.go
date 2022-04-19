@@ -10,8 +10,17 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/webbtech/shts-pdf-gen/config"
 	lerrors "github.com/webbtech/shts-pdf-gen/errors"
 	"github.com/webbtech/shts-pdf-gen/model"
+	"github.com/webbtech/shts-pdf-gen/pdf"
+)
+
+const (
+	ERR_INVALID_TYPE         = "Invalid request type in input"
+	ERR_MISSING_NUMBER       = "Missing request number in input"
+	ERR_MISSING_REQUEST_BODY = "Missing request body"
+	ERR_MISSING_TYPE         = "Missing request type in input"
 )
 
 var (
@@ -21,53 +30,77 @@ var (
 
 // Pdf struct
 type Pdf struct {
+	Cfg      *config.Config
 	Db       model.DbHandler
 	input    *model.PdfRequest
-	Request  events.APIGatewayProxyRequest
+	request  events.APIGatewayProxyRequest
 	response events.APIGatewayProxyResponse
 }
 
-const (
-	ERR_INVALID_TYPE         = "Invalid request type in input"
-	ERR_MISSING_NUMBER       = "Missing request number in input"
-	ERR_MISSING_REQUEST_BODY = "Missing request body"
-	ERR_MISSING_TYPE         = "Missing request type in input"
-)
-
 // ========================== Public Methods =============================== //
-
+// NOTE: why is request named here?
 func (p *Pdf) Response(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	p.request = request
 	p.process()
 	return p.response, nil
 }
 
 // ========================== Private Methods ============================== //
 
-// TODO: maybe we should return errors???
 func (p *Pdf) process() {
 
 	rb := responseBody{}
 	var body []byte
-	var stdError *lerrors.StdError
+	var err error
+	var estimateRecord *model.Estimate
 	var statusCode int = 201
-
-	json.Unmarshal([]byte(p.Request.Body), &p.input)
+	var stdError *lerrors.StdError
 
 	// Validate input
+	json.Unmarshal([]byte(p.request.Body), &p.input)
 	if err := p.validateInput(); err != nil {
 		errors.As(err, &stdError)
 	}
 
 	// Fetch DB Record
 	if stdError == nil {
-		estimateRecord, err := p.Db.FetchEstimate(*p.input.EstimateNumber)
-		fmt.Printf("estimateRecord: %+v\n", estimateRecord)
-		fmt.Printf("err: %+v\n", err)
+		estimateRecord, err = p.Db.FetchEstimate(*p.input.EstimateNumber)
+		if err != nil {
+			stdError = &lerrors.StdError{
+				Caller:     "handlers.Pdf.process",
+				Code:       lerrors.CodeApplicationError,
+				Err:        err,
+				Msg:        err.Error(),
+				StatusCode: 400,
+			}
+		}
 	}
 
 	// Generate PDF file
 	if stdError == nil {
+		pdf, err := pdf.New(p.Cfg, *p.input.RequestType, estimateRecord)
+		if err != nil {
+			stdError = &lerrors.StdError{
+				Caller:     "handlers.Pdf.process",
+				Code:       lerrors.CodeApplicationError,
+				Err:        err,
+				Msg:        err.Error(),
+				StatusCode: 400,
+			}
+		}
 
+		l, err := pdf.SaveToS3()
+		if err != nil {
+			stdError = &lerrors.StdError{
+				Caller:     "handlers.Pdf.process",
+				Code:       lerrors.CodeApplicationError,
+				Err:        err,
+				Msg:        err.Error(),
+				StatusCode: 400,
+			}
+		} else {
+			log.Infof("Saved pdf to: %s", l)
+		}
 	}
 
 	// Process any error
@@ -81,7 +114,7 @@ func (p *Pdf) process() {
 		rb.Message = "Success"
 	}
 
-	// Now creact the actual response object
+	// Create the response object
 	body, _ = json.Marshal(&rb)
 	p.response = events.APIGatewayProxyResponse{
 		Body:       string(body),

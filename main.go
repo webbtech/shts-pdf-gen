@@ -13,7 +13,7 @@ import (
 
 // see link below for best practices in connection pooling for lambda
 // https://www.mongodb.com/docs/atlas/best-practices-connecting-from-aws-lambda/
-// although the example above shows example with node.js, I believe the principal is the same
+// although the example above shows example with node.js, I believe the principal is the same when using the init function below
 
 var (
 	cfg    *config.Config
@@ -21,12 +21,14 @@ var (
 	client *mongo.Client
 )
 
+// init isn't called for each invocation, so we take advantage and only setup cfg and db for (I'm assuming) cold starts
 func init() {
-	log.Info("calling init in main")
-	cfg = &config.Config{}
+	log.Info("calling config.Config.init in main")
+	cfg = &config.Config{DefaultsFilePath: "https://shts-pdf.s3.ca-central-1.amazonaws.com/public/defaults.yml"}
 	err := cfg.Init()
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	db, err = mongodb.NewDb(cfg.GetMongoConnectString(), cfg.GetDbName())
@@ -40,7 +42,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	switch request.Path {
 	case "/pdf":
-		h = &handlers.Pdf{Db: db, Request: request}
+		h = &handlers.Pdf{Cfg: cfg, Db: db}
 	default:
 		h = &handlers.Ping{}
 	}
@@ -49,15 +51,5 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func main() {
-	// connect to db here
-	if db == nil {
-		log.Infof("db: %+v\n", db)
-		// var err error
-		// db, err = mongodb.NewDb(cfg.GetMongoConnectString(), cfg.GetDbName())
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-	}
-
 	lambda.Start(handler)
 }

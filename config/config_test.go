@@ -10,8 +10,18 @@ import (
 var cfg *Config
 
 func TestInitConfig(t *testing.T) {
-	t.Run("Successful Init", func(t *testing.T) {
+	t.Run("Successful Init with local file", func(t *testing.T) {
+		// cfg = &Config{}
 		cfg = &Config{}
+		err := cfg.Init()
+		if err != nil {
+			t.Fatalf("Expected null error received: %s", err)
+		}
+	})
+
+	t.Run("Successful Init with remote file", func(t *testing.T) {
+		// cfg = &Config{}
+		cfg = &Config{DefaultsFilePath: "https://shts-pdf.s3.ca-central-1.amazonaws.com/public/defaults.yml"}
 		err := cfg.Init()
 		if err != nil {
 			t.Fatalf("Expected null error received: %s", err)

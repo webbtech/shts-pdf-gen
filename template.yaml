@@ -15,6 +15,15 @@ Parameters:
     Description: Required. Value of Tag key BillTo
     Type: String
     Default: 'ShorthillsTreeService'
+  ParamKMSKeyID:
+    Description: KMS key id
+    Type: String
+  ParamSSMPath:
+    Description: SSM Params path
+    Type: String
+  ParamStorageBucket:
+    Description: s3 Storage bucket for all files
+    Type: String
 
 Resources:
 
@@ -24,14 +33,19 @@ Resources:
     DependsOn: PDFGeneratorFunction
     Properties:
       StageName: Prod
+      EndpointConfiguration: 
+        Type: REGIONAL
       Cors: "'*'"
-      # TODO: require Auth
-      #Auth:
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: GatewayAuthorization
       Tags:
         BillTo: !Ref ParamBillTo
       GatewayResponses:
         UNAUTHORIZED:
-          StatusCode: 401
+          StatusCode: "401"
           ResponseTemplates: 
               "application/json": '{ "message": $context.error.messageString }'
           ResponseParameters:
@@ -58,7 +72,12 @@ Resources:
       Architectures:
         - x86_64
       Tracing: Active
-      # Policies:
+      Role: !GetAtt PDFGeneratorRole.Arn
+      Timeout: 20 #keep at 20 for productions
+      MemorySize: 128
+      Environment:
+        Variables:
+          Stage: prod
       
       Events:
         Ping:
@@ -68,7 +87,7 @@ Resources:
             Method: GET
             RestApiId: !Ref RestApi
             Auth:
-              Authorizer: NONE
+              ApiKeyRequired: false
         Pdf:
           Type: Api
           Properties:
@@ -76,13 +95,75 @@ Resources:
             Method: POST
             RestApiId: !Ref RestApi
             Auth:
-              Authorizer: NONE
+              ApiKeyRequired: true
 
       Environment:
         Variables:
           Stage: production
       Tags:
         BillTo: !Ref ParamBillTo
+
+  PDFGeneratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: FunctionSSMAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ssm:GetParametersByPath
+            Resource:
+              Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ParamSSMPath}
+      - PolicyName: FunctionLogAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: '*'
+      - PolicyName: FunctionXRayAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - xray:PutTraceSegments
+            - xray:PutTelemetryRecords
+            Resource: '*'
+      - PolicyName: FunctionKMSAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - kms:Decrypt
+            - kms:DescribeKey
+            Resource:
+              Fn::Sub: arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${ParamKMSKeyID}
+      - PolicyName: FunctionS3Access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:*
+            Resource: 
+              Fn::Sub: arn:aws:s3:::${ParamStorageBucket}/*
+
 
 Outputs:
   ApiId:
@@ -92,9 +173,15 @@ Outputs:
   ApiURL:
     Description: API URL
     Value: ""
+  ApiEndpoint:
+    Description: "API Prod stage endpoint"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   PDFGeneratorAPI:
     Description: API Gateway endpoint URL for Prod environment for PDFGeneratorFunction
     Value: !Sub ""     
   PDFGeneratorFunction:
     Description: "PDFGenerator Lambda function ARN"
     Value: !GetAtt PDFGeneratorFunction.Arn
+  ApiKey:
+    Description: "You can find your API Key in the AWS console: (Put in the request HEADER as 'x-api-key')"
+    Value: !Sub "https://console.aws.amazon.com/apigateway/home?region=${AWS::Region}#/api-keys/${RestApi}"
