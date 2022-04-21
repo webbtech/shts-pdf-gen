@@ -9,3 +9,12 @@ Lambda function to create Estimate and Invoice PDF files
 ## Project Layout
 
 In an attempt to balance simplicity with testablity etc. this layout seems to work fairly well. However, I'm also inspired by what I [see here](https://medium.com/sellerapp/golang-project-structuring-ben-johnson-way-2a11035f94bc) ([repo](https://github.com/d-vignesh/getpets)) and may adopt some of those principles.
+
+## Realm Functions DB Connection
+
+An example of accessing atlas from a Realm function:
+
+``` javascript
+const db = context.services.get("shts-test").db("shts-test").collection("Estimate");
+db.updateOne({_id: _id}, {$set: {'updatedAt': new Date()}});
+```

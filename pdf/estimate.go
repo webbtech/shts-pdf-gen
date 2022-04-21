@@ -122,7 +122,7 @@ func (e *estimate) header() {
 	file.MoveTo(162, 19)
 	file.SetFont("Arial", "", defFontSize)
 	file.SetTextColor(0, 0, 0)
-	file.CellFormat(0, 5, record.CreatedAt.Format(DATE_FMT_SHRT), "", 2, "", false, 0, "")
+	file.CellFormat(0, 5, record.UpdatedAt.Format(DATE_FMT_SHRT), "", 2, "", false, 0, "")
 
 	file.MoveTo(138, 28)
 	file.SetFont("Arial", "", defFontSize)

@@ -15,6 +15,15 @@ Parameters:
     Description: Required. Value of Tag key BillTo
     Type: String
     Default: 'ShorthillsTreeService'
+  ParamCertificateArn:
+    Description: Domain Certificate Arn
+    Type: String
+  ParamCustomDomainName:
+    Description: Custom Domain Name
+    Type: String
+  ParamHostedZoneId:
+    Description: Hosted Zone ID
+    Type: String
   ParamKMSKeyID:
     Description: KMS key id
     Type: String
@@ -54,14 +63,15 @@ Resources:
               Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
   
-      # TODO: require Domain
-      # Domain:
-      #   DomainName: 
-      #   CertificateArn: !Ref ApiCertificate
-      #   Route53:
-      #     HostedZoneId: ""
-      #     DistributionDomainName:
-      #       Value: !Sub: ""
+      Domain:
+        DomainName: !Ref ParamCustomDomainName
+        CertificateArn: !Ref ParamCertificateArn
+        EndpointConfiguration: "REGIONAL"
+        Route53:
+          HostedZoneId: !Ref ParamHostedZoneId
+          EvaluateTargetHealth: true
+          DistributionDomainName:
+            Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
 
   PDFGeneratorFunction:
     Type: AWS::Serverless::Function
@@ -169,10 +179,13 @@ Outputs:
   ApiId:
     Description: API ID
     Value:
-      Ref: RestApi   
+      Ref: RestApi  
+  ApiArn:
+    Description: "API ARN"
+    Value: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/" 
   ApiURL:
     Description: API URL
-    Value: ""
+    Value: !Sub "https://${ParamCustomDomainName}/"
   ApiEndpoint:
     Description: "API Prod stage endpoint"
     Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

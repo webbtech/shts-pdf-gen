@@ -14,8 +14,13 @@ deploy:	build \
 	moveDefaults \
 	dev-cloud
 
-moveDefaults:
-	aws s3 cp ./config/defaults.yml s3://$(S3_STORAGE_BUCKET)/public/
+moveDefaults: 
+	aws s3 cp ./config/defaults.yml s3://$(S3_STORAGE_BUCKET)/public/ && \
+	aws s3api put-object-tagging \
+  --bucket $(S3_STORAGE_BUCKET) \
+  --key public/defaults.yml \
+  --tagging '{"TagSet": [{"Key": "public", "Value": "true"}]}' && \
+	echo "default.yml uploaded and tagged"
 
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-start-api.html
 local-api:
@@ -28,6 +33,9 @@ dev-cloud:
 	sam sync --stack-name $(STACK_NAME) --profile $(PROFILE) \
 	--s3-prefix $(AWS_DEPLOYMENT_PREFIX) \
 	--parameter-overrides \
+		ParamCertificateArn=$(CERTIFICATE_ARN) \
+		ParamCustomDomainName=$(CUSTOM_DOMAIN_NAME) \
+		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamSSMPath=$(SSM_PARAM_PATH) \
 		ParamStorageBucket=${S3_STORAGE_BUCKET}
@@ -36,6 +44,9 @@ dev-cloud-watch:
 	sam sync --stack-name $(STACK_NAME) --watch --profile $(PROFILE) \
 	--s3-prefix $(AWS_DEPLOYMENT_PREFIX) \
 	--parameter-overrides \
+		ParamCertificateArn=$(CERTIFICATE_ARN) \
+		ParamCustomDomainName=$(CUSTOM_DOMAIN_NAME) \
+		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamSSMPath=$(SSM_PARAM_PATH) \
 		ParamStorageBucket=${S3_STORAGE_BUCKET}
@@ -54,4 +65,5 @@ validate:
 watch:
 	fswatch -o ./ | xargs -n1 -I{} sam build
 
-# TODO: add command for running go tests
+test:
+	go test -v

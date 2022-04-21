@@ -7,8 +7,8 @@ import (
 )
 
 type PdfRequest struct {
-	EstimateNumber *int    `json:"number"`
-	RequestType    *string `json:"requestType"`
+	EstimateNumber *int    `bson:"number" json:"number"`
+	RequestType    *string `bson:"requestType" json:"requestType"`
 }
 
 type Customer struct {

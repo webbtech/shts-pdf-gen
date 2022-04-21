@@ -105,7 +105,7 @@ func (db *Mdb) Close() {
 func (db *Mdb) getEstimate(e *model.Estimate, estimateNum int) (err error) {
 
 	if estimateNum <= 0 {
-		return errors.New("missing estimateNum string")
+		return errors.New("invalid estimateNum value")
 	}
 
 	col := db.db.Collection(colEstimate)
@@ -151,12 +151,9 @@ func (db *Mdb) getItems(e *model.Estimate) (err error) {
 		return err
 	}
 
-	// var tmpItems []model.EstimateItem
 	if err = cur.All(context.TODO(), &e.Items); err != nil {
 		return err
 	}
-
-	// fmt.Printf("tmpItem: %+v\n", tmpItems)
 
 	return err
 }

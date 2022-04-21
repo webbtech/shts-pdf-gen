@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/webbtech/shts-pdf-gen/config"
 	lerrors "github.com/webbtech/shts-pdf-gen/errors"
@@ -56,8 +57,12 @@ func (p *Pdf) process() {
 	var statusCode int = 201
 	var stdError *lerrors.StdError
 
+	// we're getting ExtJSON from the Realm function: createPDF,
+	// so unmarshaling must be done on an EJSON formatted doc
+	// see: https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/
+	bson.UnmarshalExtJSON([]byte(p.request.Body), true, &p.input)
+
 	// Validate input
-	json.Unmarshal([]byte(p.request.Body), &p.input)
 	if err := p.validateInput(); err != nil {
 		errors.As(err, &stdError)
 	}
