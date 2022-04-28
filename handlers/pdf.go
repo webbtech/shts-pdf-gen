@@ -88,7 +88,7 @@ func (p *Pdf) process() {
 			}
 		}
 
-		l, err := pdf.SaveToS3()
+		err = pdf.SaveToS3()
 		if err != nil {
 			stdError = &lerrors.StdError{
 				Caller:     "handlers.Pdf.process",
@@ -98,7 +98,7 @@ func (p *Pdf) process() {
 				StatusCode: 400,
 			}
 		} else {
-			log.Infof("Saved pdf to: %s", l)
+			log.Info("Saved pdf to s3")
 		}
 	}
 
