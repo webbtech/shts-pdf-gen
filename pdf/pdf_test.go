@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	defaultsFp  = "../config/defaults.yml"
 	estimateNum = 1011
 )
 
@@ -31,7 +30,7 @@ type PdfSuite struct {
 func (s *PdfSuite) SetupTest() {
 	os.Setenv("Stage", "test")
 
-	s.cfg = &config.Config{DefaultsFilePath: defaultsFp}
+	s.cfg = &config.Config{}
 	err := s.cfg.Init()
 	s.NoError(err)
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -19,9 +20,7 @@ import (
 
 const (
 	ERR_INVALID_TYPE         = "Invalid request type in input"
-	ERR_MISSING_NUMBER       = "Missing request number in input"
 	ERR_MISSING_REQUEST_BODY = "Missing request body"
-	ERR_MISSING_TYPE         = "Missing request type in input"
 )
 
 var (
@@ -56,11 +55,6 @@ func (p *Pdf) process() {
 	var estimateRecord *model.Estimate
 	var statusCode int = 201
 	var stdError *lerrors.StdError
-
-	// we're getting ExtJSON from the Realm function: createPDF,
-	// so unmarshaling must be done on an EJSON formatted doc
-	// see: https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/
-	bson.UnmarshalExtJSON([]byte(p.request.Body), true, &p.input)
 
 	// Validate input
 	if err := p.validateInput(); err != nil {
@@ -129,24 +123,23 @@ func (p *Pdf) process() {
 }
 
 func (p *Pdf) validateInput() (err *lerrors.StdError) {
+
 	var inputErrs []string
+	validate := validator.New()
 
-	if p.input == nil {
-		err = &lerrors.StdError{
-			Caller: "handlers.validateInput",
-			Code:   lerrors.CodeBadInput,
-			Err:    errors.New(ERR_MISSING_REQUEST_BODY),
-			Msg:    ERR_MISSING_REQUEST_BODY, StatusCode: 400,
+	// we're getting ExtJSON from the Realm function: createPDF,
+	// so unmarshaling must be done on an EJSON formatted doc
+	// see: https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/
+	bson.UnmarshalExtJSON([]byte(p.request.Body), true, &p.input)
+
+	// validate struct based on tags
+	// see https://github.com/go-playground/validator
+	valErr := validate.Struct(p.input)
+	if valErr != nil {
+		// for more on usage, see: https://github.com/go-playground/validator/blob/master/_examples/simple/main.go
+		for _, err := range valErr.(validator.ValidationErrors) {
+			inputErrs = append(inputErrs, fmt.Sprintf("Field validation for '%s' failed on the '%s' tag", err.Field(), err.Tag()))
 		}
-		return err
-	}
-
-	if p.input.EstimateNumber == nil {
-		inputErrs = append(inputErrs, ERR_MISSING_NUMBER)
-	}
-
-	if p.input.RequestType == nil {
-		inputErrs = append(inputErrs, ERR_MISSING_TYPE)
 	}
 
 	if p.input.RequestType != nil {
@@ -158,8 +151,13 @@ func (p *Pdf) validateInput() (err *lerrors.StdError) {
 	}
 
 	if len(inputErrs) > 0 {
-		error := errors.New(strings.Join(inputErrs, "\n"))
-		err = &lerrors.StdError{Caller: "handlers.validateInput", Code: lerrors.CodeBadInput, Err: error, Msg: error.Error(), StatusCode: 400}
+		err = &lerrors.StdError{
+			Caller:     "handlers.validateInput",
+			Code:       lerrors.CodeBadInput,
+			Err:        errors.New("Failed request input validation"),
+			Msg:        strings.Join(inputErrs, "\n"),
+			StatusCode: 400,
+		}
 		return err
 	}
 

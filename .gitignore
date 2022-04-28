@@ -31,3 +31,4 @@ scratch
 *.tmp
 tmp/
 package.yml
+.vscode/

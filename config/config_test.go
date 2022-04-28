@@ -11,8 +11,7 @@ var cfg *Config
 
 func TestInitConfig(t *testing.T) {
 	t.Run("Successful Init with local file", func(t *testing.T) {
-		// cfg = &Config{}
-		cfg = &Config{}
+		cfg = &Config{IsDefaultsLocal: true}
 		err := cfg.Init()
 		if err != nil {
 			t.Fatalf("Expected null error received: %s", err)
@@ -20,8 +19,7 @@ func TestInitConfig(t *testing.T) {
 	})
 
 	t.Run("Successful Init with remote file", func(t *testing.T) {
-		// cfg = &Config{}
-		cfg = &Config{DefaultsFilePath: "https://shts-pdf.s3.ca-central-1.amazonaws.com/public/defaults.yml"}
+		cfg = &Config{}
 		err := cfg.Init()
 		if err != nil {
 			t.Fatalf("Expected null error received: %s", err)
@@ -50,26 +48,14 @@ func TestGetStageEnv(t *testing.T) {
 }
 
 func TestSetDefaults(t *testing.T) {
-	t.Run("test setting DefaultsFilePath", func(t *testing.T) {
+	t.Run("test setting defaultsFilePath", func(t *testing.T) {
 
-		cfg = &Config{}
+		cfg = &Config{IsDefaultsLocal: true}
 		cfg.setDefaults()
 		dir, _ := os.Getwd()
 		expectedFilePath := path.Join(dir, defaultFileName)
-		if expectedFilePath != cfg.DefaultsFilePath {
-			t.Fatalf("DefaultsFilePath should be %s, have: %s", expectedFilePath, cfg.DefaultsFilePath)
-		}
-
-		fp := path.Join("/tmp", defaultFileName)
-		cfg = &Config{DefaultsFilePath: fp}
-		err := cfg.setDefaults()
-		expectedFilePath = fp
-
-		if expectedFilePath != cfg.DefaultsFilePath {
-			t.Fatalf("DefaultsFilePath should be %s, have: %s", expectedFilePath, cfg.DefaultsFilePath)
-		}
-		if err == nil {
-			t.Fatalf("setDefaults should return error")
+		if expectedFilePath != defaultsFilePath {
+			t.Fatalf("defaultsFilePath should be %s, have: %s", expectedFilePath, defaultsFilePath)
 		}
 	})
 }
