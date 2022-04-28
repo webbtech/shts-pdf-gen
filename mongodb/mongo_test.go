@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	defaultsFp  = "../config/defaults.yml"
 	estimateNum = 1011
 )
 
@@ -22,7 +21,7 @@ type MongoSuite struct {
 
 func (suite *MongoSuite) SetupTest() {
 	os.Setenv("Stage", "test")
-	suite.cfg = &config.Config{DefaultsFilePath: defaultsFp}
+	suite.cfg = &config.Config{}
 	err := suite.cfg.Init()
 	suite.NoError(err)
 }

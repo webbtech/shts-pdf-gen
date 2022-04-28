@@ -50,8 +50,10 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: GatewayAuthorization
+      # These don't appear to show up where expected
       Tags:
         BillTo: !Ref ParamBillTo
+
       GatewayResponses:
         UNAUTHORIZED:
           StatusCode: "401"
@@ -83,11 +85,11 @@ Resources:
         - x86_64
       Tracing: Active
       Role: !GetAtt PDFGeneratorRole.Arn
-      Timeout: 20 #keep at 20 for productions
+      Timeout: 20 #keep at 20 for production
       MemorySize: 128
       Environment:
         Variables:
-          Stage: prod
+          Stage: production
       
       Events:
         Ping:
@@ -106,10 +108,7 @@ Resources:
             RestApiId: !Ref RestApi
             Auth:
               ApiKeyRequired: true
-
-      Environment:
-        Variables:
-          Stage: production
+              
       Tags:
         BillTo: !Ref ParamBillTo
 

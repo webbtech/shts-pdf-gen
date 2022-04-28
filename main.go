@@ -24,7 +24,8 @@ var (
 // init isn't called for each invocation, so we take advantage and only setup cfg and db for (I'm assuming) cold starts
 func init() {
 	log.Info("calling config.Config.init in main")
-	cfg = &config.Config{DefaultsFilePath: "https://shts-pdf.s3.ca-central-1.amazonaws.com/public/defaults.yml"}
+	// TODO: this s3 object path needs to go into config
+	cfg = &config.Config{}
 	err := cfg.Init()
 	if err != nil {
 		log.Fatal(err)

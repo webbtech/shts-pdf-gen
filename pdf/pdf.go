@@ -7,9 +7,9 @@ import (
 	"path"
 
 	"github.com/jung-kurt/gofpdf"
-	"github.com/webbtech/shts-pdf-gen/awsservices"
 	"github.com/webbtech/shts-pdf-gen/config"
 	"github.com/webbtech/shts-pdf-gen/model"
+	"github.com/webbtech/shts-pdf-gen/services"
 )
 
 // Pdf struct
@@ -61,21 +61,19 @@ func New(cfg *config.Config, requestType string, record *model.Estimate) (p *Pdf
 // OutputToDisk method
 func (p *Pdf) OutputToDisk(dir string) (err error) {
 	outputPath := path.Join(dir, p.outputName)
-	err = p.file.OutputFileAndClose(outputPath)
-	return err
+	return p.file.OutputFileAndClose(outputPath)
 }
 
 // SaveToS3 method
-func (p *Pdf) SaveToS3() (location string, err error) {
+func (p *Pdf) SaveToS3() (err error) {
 
 	fileObject := path.Join(p.requestType, p.outputName)
 	var buf bytes.Buffer
-	if err := p.file.Output(&buf); err != nil {
-		return "", err
+	if err = p.file.Output(&buf); err != nil {
+		return err
 	}
-	location, err = awsservices.PutFile(&buf, fileObject, p.cfg.AwsRegion, p.cfg.S3Bucket)
 
-	return location, err
+	return services.UploadS3Object(&buf, fileObject, p.cfg.AwsRegion, p.cfg.S3Bucket)
 }
 
 // ========================== Private Methods =============================== //

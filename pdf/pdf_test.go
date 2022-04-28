@@ -1,7 +1,6 @@
 package pdf
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -12,7 +11,6 @@ import (
 )
 
 const (
-	defaultsFp  = "../config/defaults.yml"
 	estimateNum = 1011
 )
 
@@ -31,7 +29,7 @@ type PdfSuite struct {
 func (s *PdfSuite) SetupTest() {
 	os.Setenv("Stage", "test")
 
-	s.cfg = &config.Config{DefaultsFilePath: defaultsFp}
+	s.cfg = &config.Config{}
 	err := s.cfg.Init()
 	s.NoError(err)
 
@@ -65,11 +63,8 @@ func (s *PdfSuite) TestEstimateToS3() {
 	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
 
-	l, err := p.SaveToS3()
+	err = p.SaveToS3()
 	s.NoError(err)
-
-	expectLocation := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s/%s", s.cfg.S3Bucket, s.cfg.AwsRegion, s.requestType, p.outputName)
-	s.Equal(expectLocation, l)
 }
 
 // TestInvoiceToS3 method
@@ -78,11 +73,8 @@ func (s *PdfSuite) TestInvoiceToS3() {
 	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
 
-	l, err := p.SaveToS3()
+	err = p.SaveToS3()
 	s.NoError(err)
-
-	expectLocation := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s/%s", s.cfg.S3Bucket, s.cfg.AwsRegion, s.requestType, p.outputName)
-	s.Equal(expectLocation, l)
 }
 
 // TestPdfSuite method
