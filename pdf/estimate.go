@@ -77,13 +77,14 @@ func (e *estimate) header() {
 	file.ImageOptions(companyInfo.LogoURI, 10, 10, 30, 30, false, logoInfo, 0, fmt.Sprintf("%s://%s", protocol, companyInfo.Domain))
 
 	file.MoveTo(10, 41)
-	file.SetFont("Arial", "", 7.5)
+	file.SetFont("Arial", "", 6.5)
 	file.SetTextColor(100, 100, 100)
 	file.CellFormat(0, 3.5, "Est. 1999", "", 1, "", false, 0, "")
 	file.CellFormat(0, 3.5, "Certified ISA Arborist ON1111-A", "", 1, "", false, 0, "")
 	file.CellFormat(0, 3.5, "Certified Tree Risk Assessor #1859", "", 2, "", false, 0, "")
 	file.CellFormat(0, 3.5, "Certified Utility Arborist #400145204", "", 2, "", false, 0, "")
 	file.CellFormat(0, 3.5, "Certified Ontario Arborist #400143375", "", 2, "", false, 0, "")
+	file.CellFormat(0, 3.5, "Incorporation: 2187989 Ontario Inc.", "", 2, "", false, 0, "")
 
 	file.MoveTo(-10, 12)
 	file.SetFont("Times", "B", 24)
@@ -167,8 +168,8 @@ func (e *estimate) items() {
 
 	file.RoundedRect(10, 68, 196, 6, 0.75, "1234", "F")
 	file.MoveTo(11, 69.25)
-	file.CellFormat(69, 4, "ITEM", "", 0, "", false, 0, "")
-	file.CellFormat(75, 4, "DESCRIPTION", "", 0, "", false, 0, "")
+	file.CellFormat(67, 4, "DESCRIPTION", "", 0, "", false, 0, "")
+	file.CellFormat(77, 4, "NOTES", "", 0, "", false, 0, "")
 	file.CellFormat(9, 4, "QTY", "", 0, "R", false, 0, "")
 	file.CellFormat(18, 4, "UNIT", "", 0, "R", false, 0, "")
 	file.CellFormat(22, 4, "EXTENDED", "", 0, "R", false, 0, "")
@@ -180,33 +181,23 @@ func (e *estimate) items() {
 		return
 	}
 
-	// TODO: create mock function for this
-	// Test page break for multi-page estimate
-	/* record.Items = append(record.Items, record.Items[0])
-	record.Items = append(record.Items, record.Items[1])
-	record.Items = append(record.Items, record.Items[0])
-	record.Items = append(record.Items, record.Items[1])
-	record.Items = append(record.Items, record.Items[0])
-	record.Items = append(record.Items, record.Items[1])
-	record.Items = append(record.Items, record.Items[0])
-	record.Items = append(record.Items, record.Items[1])
-	record.Items = append(record.Items, record.Items[0])
-	record.Items = append(record.Items, record.Items[1]) */
-
 	file.SetFont("Arial", "", defFontSize)
 	file.SetTextColor(0, 0, 0)
 	file.SetFillColor(100, 100, 100)
 
-	for idx, i := range record.Items {
+	for _, i := range record.Items {
+
+		rowHt := setItemRowHeight(i, 44, true)
+
 		file.Ln(3)
 		xPos = file.GetX()
 		yPos = file.GetY()
-		file.MultiCell(descripW, defLnHt, i.Description, "", "T", false)
+		file.MultiCell(descripW, defLnHt, cleanStr(i.Description), "", "T", false)
 		file.MoveTo(xPos+5+descripW, yPos)
 
 		xPos = file.GetX()
-		yPos = file.GetY()
-		file.MultiCell(notesW, defLnHt, i.Notes, "", "T", false)
+
+		file.MultiCell(notesW, defLnHt, cleanStr(i.Notes), "", "T", false)
 		file.MoveTo(xPos+notesW, yPos)
 		file.CellFormat(8, defLnHt, fmt.Sprintf("%d", i.Qty), "", 0, "TC", false, 0, "")
 		file.CellFormat(16, defLnHt, fmt.Sprintf("%.2f", i.Cost), "", 0, "TR", false, 0, "")
@@ -214,26 +205,29 @@ func (e *estimate) items() {
 		file.CellFormat(22, defLnHt, fmt.Sprintf("%.2f", i.Total), "", 0, "TR", false, 0, "")
 
 		file.SetFont("Arial", "", defFontSize)
-		file.Ln(14)
-		file.CellFormat(0, 6, "", "B", 1, "", false, 0, "")
 
-		if (idx+1)%8 == 0 {
-			file.AddPage()
-			file.CellFormat(0, 6, "", "B", 1, "", false, 0, "")
-		}
+		file.Ln(rowHt)
+		file.CellFormat(0, 4, "", "B", 1, "", false, 0, "")
 	}
 }
 
 func (e *estimate) totals() {
+
 	var yPos float64
+
 	record := e.p.record
 	file := e.p.file
 	totalsCellH := 5.0
 	totalsCellW := 22.0
 	totalsCellX := 160.0
 
-	file.Ln(6)
 	yPos = file.GetY()
+	if yPos > 182 {
+		file.AddPage()
+		file.CellFormat(0, 4, "", "T", 1, "", false, 0, "")
+	} else {
+		file.Ln(4)
+	}
 
 	file.SetFont("Arial", "B", defFontSize)
 	file.CellFormat(0, 6, "JOB NOTES", "", 1, "T", false, 0, "")
@@ -241,6 +235,7 @@ func (e *estimate) totals() {
 	file.MultiCell(120, defLnHt, record.JobNotes, "", "T", false)
 
 	// totals section
+	yPos = file.GetY()
 	file.MoveTo(totalsCellX, yPos)
 
 	file.SetFont("Arial", "", defFontSize)
@@ -257,7 +252,7 @@ func (e *estimate) totals() {
 	file.CellFormat(totalsCellW, totalsCellH, "Discount", "", 0, "MR", false, 0, "")
 	file.SetFont("Arial", "B", defFontSize)
 	file.SetTextColor(0, 0, 0)
-	file.CellFormat(totalsCellW, totalsCellH, fmt.Sprintf("-%.2f", record.Discount), "", 0, "MR", false, 0, "")
+	file.CellFormat(totalsCellW, totalsCellH, fmt.Sprintf("- %.2f", record.Discount), "", 0, "MR", false, 0, "")
 
 	file.MoveTo(totalsCellX, yPos+(2*totalsCellH))
 
@@ -299,8 +294,9 @@ func (e *estimate) footer() {
 	file.CellFormat(0, 6, "FINANCE NOTES", "", 1, "T", false, 0, "")
 
 	file.SetFont("Arial", "", defFontSize)
-	file.CellFormat(0, defLnHt, "Incorporation: 2187989 Ontario Inc.", "", 1, "", false, 0, "")
-	file.CellFormat(0, defLnHt, fmt.Sprintf("HST #: %s", e.p.cfg.GetCompanyInfo().HST), "", 1, "", false, 0, "")
-	file.CellFormat(0, defLnHt, PAYMENT_DUE_NOTE, "", 1, "", false, 0, "")
 	file.CellFormat(0, defLnHt, fmt.Sprintf(ESTIMATE_VALID, expireDate.Format(DATE_FMT_SHRT)), "", 1, "", false, 0, "")
+	file.CellFormat(0, defLnHt, PAYMENT_DUE_NOTE, "", 1, "", false, 0, "")
+	file.CellFormat(0, defLnHt, "Payable to Shorthills Tree Service", "", 1, "", false, 0, "")
+	file.CellFormat(0, defLnHt, fmt.Sprintf("HST #: %s", e.p.cfg.GetCompanyInfo().HST), "", 1, "", false, 0, "")
+	file.CellFormat(0, defLnHt, "Incorporation: 2187989 Ontario Inc.", "", 1, "", false, 0, "")
 }

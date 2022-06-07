@@ -103,11 +103,27 @@ Resources:
         Pdf:
           Type: Api
           Properties:
-            Path: /pdf
+            Path: /
             Method: POST
             RestApiId: !Ref RestApi
             Auth:
               ApiKeyRequired: true
+        Delete:
+          Type: Api
+          Properties:
+            Path: /
+            Method: DELETE
+            RestApiId: !Ref RestApi
+            Auth:
+              ApiKeyRequired: true
+        Any:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+            RestApiId: !Ref RestApi
+            Auth:
+              ApiKeyRequired: false
               
       Tags:
         BillTo: !Ref ParamBillTo

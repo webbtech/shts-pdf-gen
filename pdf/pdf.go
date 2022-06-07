@@ -3,8 +3,11 @@ package pdf
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"path"
+	"regexp"
+	"strings"
 
 	"github.com/jung-kurt/gofpdf"
 	"github.com/webbtech/shts-pdf-gen/config"
@@ -101,4 +104,40 @@ func (p *Pdf) getLogo(url string) (gofpdf.ImageOptions, bool) {
 		return imgInfo, false
 	}
 	return imgInfo, true
+}
+
+// ========================== Helper Functions ============================= //
+
+func cleanStr(text string) string {
+
+	text = strings.ReplaceAll(text, "’", "'")
+	text = strings.ReplaceAll(text, "“", "\"")
+	text = strings.ReplaceAll(text, "”", "\"")
+	text = strings.ReplaceAll(text, "…", "...")
+
+	// the above should handle most characters,
+	// but various unknown characters, possibly cntrl,
+	// command, or similar are finding their way in
+	// and so we remove them here
+	reg, err := regexp.Compile("[^0-9\\w\\s'\"!.,]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return reg.ReplaceAllString(text, "")
+}
+
+func setItemRowHeight(item model.EstimateItem, cellWidth int, compare bool) float64 {
+
+	descripLen := len(item.Description)
+	longestStr := descripLen
+	if compare {
+		notesLen := len(item.Notes)
+		if notesLen > descripLen {
+			longestStr = notesLen
+		}
+	}
+	numLines := float64(longestStr / cellWidth)
+
+	return (numLines * defLnHt) + 2
 }
