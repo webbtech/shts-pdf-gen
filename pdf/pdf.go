@@ -107,6 +107,7 @@ func (p *Pdf) getLogo(url string) (gofpdf.ImageOptions, bool) {
 }
 
 // ========================== Helper Functions ============================= //
+
 func cleanStr(text string) string {
 
 	text = strings.ReplaceAll(text, "’", "'")
@@ -124,4 +125,19 @@ func cleanStr(text string) string {
 	}
 
 	return reg.ReplaceAllString(text, "")
+}
+
+func setItemRowHeight(item model.EstimateItem, cellWidth int, compare bool) float64 {
+
+	descripLen := len(item.Description)
+	longestStr := descripLen
+	if compare {
+		notesLen := len(item.Notes)
+		if notesLen > descripLen {
+			longestStr = notesLen
+		}
+	}
+	numLines := float64(longestStr / cellWidth)
+
+	return (numLines * defLnHt) + 2
 }

@@ -168,8 +168,8 @@ func (e *estimate) items() {
 
 	file.RoundedRect(10, 68, 196, 6, 0.75, "1234", "F")
 	file.MoveTo(11, 69.25)
-	file.CellFormat(69, 4, "ITEM", "", 0, "", false, 0, "")
-	file.CellFormat(75, 4, "DESCRIPTION", "", 0, "", false, 0, "")
+	file.CellFormat(67, 4, "DESCRIPTION", "", 0, "", false, 0, "")
+	file.CellFormat(77, 4, "NOTES", "", 0, "", false, 0, "")
 	file.CellFormat(9, 4, "QTY", "", 0, "R", false, 0, "")
 	file.CellFormat(18, 4, "UNIT", "", 0, "R", false, 0, "")
 	file.CellFormat(22, 4, "EXTENDED", "", 0, "R", false, 0, "")
@@ -187,14 +187,7 @@ func (e *estimate) items() {
 
 	for _, i := range record.Items {
 
-		descripLen := len(i.Description)
-		notesLen := len(i.Notes)
-		longestStr := descripLen
-		if notesLen > descripLen {
-			longestStr = notesLen
-		}
-		numLines := float64(longestStr / 44)
-		rowHt := (numLines * defLnHt) + 2
+		rowHt := setItemRowHeight(i, 44, true)
 
 		file.Ln(3)
 		xPos = file.GetX()
@@ -219,7 +212,9 @@ func (e *estimate) items() {
 }
 
 func (e *estimate) totals() {
+
 	var yPos float64
+
 	record := e.p.record
 	file := e.p.file
 	totalsCellH := 5.0
