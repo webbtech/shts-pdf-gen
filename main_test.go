@@ -10,30 +10,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-func TestPingHandler(t *testing.T) {
-
-	os.Setenv("Stage", "test")
-
-	var msg string
-	t.Run("Successful ping", func(t *testing.T) {
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(200)
-		}))
-		defer ts.Close()
-
-		r, err := handler(events.APIGatewayProxyRequest{Path: "/"})
-
-		expectedMsg := "Healthy"
-		msg = extractMessage(r.Body)
-		if msg != expectedMsg {
-			t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
-		}
-		if err != nil {
-			t.Fatal("Everything should be ok")
-		}
-	})
-}
-
 func TestEnvVars(t *testing.T) {
 	os.Setenv("PARAM1", "VALUE12")
 	t.Run("Successful ping", func(t *testing.T) {
@@ -50,31 +26,98 @@ func TestEnvVars(t *testing.T) {
 	})
 }
 
-// TODO: here we should use mocks to avoid having to use the mongodb and Pdf packages
-func TestPdfHandler(t *testing.T) {
+func TestAnyHandler(t *testing.T) {
 	os.Setenv("Stage", "test")
-
 	var msg string
-	t.Run("Successful pdf", func(t *testing.T) {
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(201)
-		}))
-		defer ts.Close()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+	}))
+	defer ts.Close()
 
-		requestBody := `{"number": 1011, "requestType": "estimate"}`
-		r, err := handler(events.APIGatewayProxyRequest{Path: "/pdf", Body: requestBody})
+	requestBody := `{"number": 1191, "requestType": "estimate"}`
+	r, err := handler(events.APIGatewayProxyRequest{HTTPMethod: "PUT", Body: requestBody})
 
-		expectedMsg := "Success"
-		msg = extractMessage(r.Body)
-		if msg != expectedMsg {
-			t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
-		}
-		if err != nil {
-			t.Fatal("Everything should be ok")
-		}
-	})
+	expectedMsg := "Invalid Verb"
+	msg = extractMessage(r.Body)
+	if msg != expectedMsg {
+		t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
+	}
+	if err != nil {
+		t.Fatal("Everything should be ok")
+	}
 }
+
+func TestGetHandler(t *testing.T) {
+
+	os.Setenv("Stage", "test")
+	var msg string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}))
+	defer ts.Close()
+
+	r, err := handler(events.APIGatewayProxyRequest{HTTPMethod: "GET"})
+
+	expectedMsg := "Healthy"
+	msg = extractMessage(r.Body)
+	if msg != expectedMsg {
+		t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
+	}
+	if err != nil {
+		t.Fatal("Everything should be ok")
+	}
+}
+
+// NOTE: here we should use mocks to avoid having to use the mongodb and Pdf packages
+func TestPostHandler(t *testing.T) {
+
+	os.Setenv("Stage", "test")
+	var msg string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+	}))
+	defer ts.Close()
+
+	requestBody := `{"number": 1191, "requestType": "estimate"}`
+	r, err := handler(events.APIGatewayProxyRequest{HTTPMethod: "POST", Body: requestBody})
+
+	expectedMsg := "Success"
+	msg = extractMessage(r.Body)
+	if msg != expectedMsg {
+		t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
+	}
+	if err != nil {
+		t.Fatal("Everything should be ok")
+	}
+
+}
+
+func TestDeleteHandler(t *testing.T) {
+	os.Setenv("Stage", "test")
+	var msg string
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}))
+	defer ts.Close()
+
+	requestBody := `{"number": 1191, "requestType": "estimate"}`
+	r, err := handler(events.APIGatewayProxyRequest{HTTPMethod: "DELETE", Body: requestBody})
+
+	expectedMsg := "File deleted"
+	msg = extractMessage(r.Body)
+	if msg != expectedMsg {
+		t.Fatalf("Expected error message: %s received: %s", expectedMsg, msg)
+	}
+	if err != nil {
+		t.Fatal("Everything should be ok")
+	}
+}
+
+// ============================== Helpers =====================================
 
 func extractMessage(b string) (msg string) {
 	var dat map[string]string

@@ -32,3 +32,4 @@ scratch
 tmp/
 package.yml
 .vscode/
+/vendor

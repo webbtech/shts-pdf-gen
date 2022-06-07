@@ -67,4 +67,4 @@ watch:
 	fswatch -o ./ | xargs -n1 -I{} sam build
 
 test:
-	go test -v
+	@go test -v ./...

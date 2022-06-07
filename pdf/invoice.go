@@ -144,9 +144,10 @@ func (i *invoice) header() {
 
 func (i *invoice) items() {
 
+	var xPos, yPos float64
 	record := i.p.record
 	file := i.p.file
-	descripW := 148.0
+	descripW := 143.0
 
 	// Green separator
 	file.SetFillColor(60, 98, 61)
@@ -162,7 +163,7 @@ func (i *invoice) items() {
 
 	file.RoundedRect(10, 82, 196, 6, 0.75, "1234", "F")
 	file.MoveTo(11, 83.25)
-	file.CellFormat(146, 4, "ITEM", "", 0, "", false, 0, "")
+	file.CellFormat(146, 4, "DESCRIPTION", "", 0, "", false, 0, "")
 	file.CellFormat(6, 4, "QTY", "", 0, "R", false, 0, "")
 	file.CellFormat(19, 4, "UNIT", "", 0, "R", false, 0, "")
 	file.CellFormat(22, 4, "EXTENDED", "", 0, "R", false, 0, "")
@@ -170,20 +171,29 @@ func (i *invoice) items() {
 	file.Ln(6)
 	file.SetFont("Arial", "", defFontSize)
 
-	for idx, i := range record.Items {
-		file.Ln(2.5)
-		file.CellFormat(descripW, defLnHt, i.Description, "", 0, "", false, 0, "")
-		file.CellFormat(6, defLnHt, fmt.Sprintf("%d", i.Qty), "", 0, "C", false, 0, "")
-		file.CellFormat(18, defLnHt, fmt.Sprintf("%.2f", i.Cost), "", 0, "R", false, 0, "")
-		file.SetFont("Arial", "B", defFontSize)
-		file.CellFormat(22, defLnHt, fmt.Sprintf("%.2f", i.Total), "", 1, "R", false, 0, "")
-		file.SetFont("Arial", "", defFontSize)
-		file.CellFormat(0, 2.5, "", "B", 1, "", false, 0, "")
+	for _, i := range record.Items {
 
-		if (idx+1)%16 == 0 { // TODO: test this
+		rowHt := setItemRowHeight(i, 95, false)
+
+		file.Ln(3)
+		xPos = file.GetX()
+		yPos = file.GetY()
+		file.MultiCell(descripW, defLnHt, cleanStr(i.Description), "", "T", false)
+		file.MoveTo(xPos+5+descripW, yPos)
+		file.CellFormat(6, defLnHt, fmt.Sprintf("%d", i.Qty), "", 0, "TC", false, 0, "")
+		file.CellFormat(18, defLnHt, fmt.Sprintf("%.2f", i.Cost), "", 0, "TR", false, 0, "")
+		file.SetFont("Arial", "B", defFontSize)
+		file.CellFormat(22, defLnHt, fmt.Sprintf("%.2f", i.Total), "", 0, "TR", false, 0, "")
+
+		file.SetFont("Arial", "", defFontSize)
+
+		file.Ln(rowHt)
+		file.CellFormat(0, 4, "", "B", 1, "", false, 0, "")
+
+		/* if (idx+1)%16 == 0 { // TODO: test this
 			file.AddPage()
 			file.CellFormat(0, 6, "", "B", 1, "", false, 0, "")
-		}
+		} */
 	}
 }
 
@@ -197,7 +207,14 @@ func (i *invoice) totals() {
 	totalsCellW := 22.0
 	totalsCellX := 160.0
 
-	file.Ln(4)
+	yPos = file.GetY()
+	if yPos > 202 {
+		file.AddPage()
+		file.CellFormat(0, 4, "", "T", 1, "", false, 0, "")
+	} else {
+		file.Ln(4)
+	}
+
 	yPos = file.GetY()
 	file.MoveTo(totalsCellX, yPos)
 
@@ -215,7 +232,7 @@ func (i *invoice) totals() {
 	file.CellFormat(totalsCellW, totalsCellH, "Discount", "", 0, "MR", false, 0, "")
 	file.SetFont("Arial", "B", defFontSize)
 	file.SetTextColor(0, 0, 0)
-	file.CellFormat(totalsCellW, totalsCellH, fmt.Sprintf("-%.2f", record.Discount), "", 0, "MR", false, 0, "")
+	file.CellFormat(totalsCellW, totalsCellH, fmt.Sprintf("- %.2f", record.Discount), "", 0, "MR", false, 0, "")
 
 	file.MoveTo(totalsCellX, yPos+(2*totalsCellH))
 
@@ -247,7 +264,7 @@ func (i *invoice) footer() {
 	companyInfo := i.p.cfg.GetCompanyInfo()
 	file := i.p.file
 
-	file.Ln(16)
+	file.Ln(8)
 	file.CellFormat(0, 2, "", "T", 1, "", false, 0, "")
 
 	file.SetFont("Arial", "B", defFontSize)

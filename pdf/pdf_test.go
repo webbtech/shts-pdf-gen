@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	estimateNum = 1011
+	estimateNum = 1177 // estimate with 11 different items and several unwanted special characters
+	// estimateNum = 1191 // estimate with several special characters and description
 )
 
-// to test and preview, do something like: go test -run ^TestPdfSuite$ github.com/webbtech/shts-pdf-gen/pdf && open -a Preview ./tmp/estimate-1011.pdf
+// to test and preview, do something like: go test -run ^TestPdfSuite$ github.com/webbtech/shts-pdf-gen/pdf && open -a Preview ./tmp/est-1177.pdf
 
 // PdfSuite struct
 type PdfSuite struct {
@@ -54,7 +55,6 @@ func (s *PdfSuite) TestInvoiceToDisk() {
 	p, err := New(s.cfg, s.requestType, s.estimateRecord)
 	s.NoError(err)
 	p.OutputToDisk("../tmp")
-	// suite.IsType(&model.Customer{}, q.)
 }
 
 // TestEstimateToS3 method

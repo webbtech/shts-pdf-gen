@@ -24,7 +24,6 @@ var (
 // init isn't called for each invocation, so we take advantage and only setup cfg and db for (I'm assuming) cold starts
 func init() {
 	log.Info("calling config.Config.init in main")
-	// TODO: this s3 object path needs to go into config
 	cfg = &config.Config{}
 	err := cfg.Init()
 	if err != nil {
@@ -41,11 +40,15 @@ func init() {
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var h handlers.Handler
 
-	switch request.Path {
-	case "/pdf":
-		h = &handlers.Pdf{Cfg: cfg, Db: db}
+	switch request.HTTPMethod {
+	case "DELETE":
+		h = &handlers.Delete{Cfg: cfg}
+	case "POST":
+		h = &handlers.Post{Cfg: cfg, Db: db}
+	case "GET":
+		h = &handlers.Get{}
 	default:
-		h = &handlers.Ping{}
+		h = &handlers.Any{}
 	}
 
 	return h.Response(request)
