@@ -17,46 +17,14 @@ type S3PutObjectAPIImp struct{}
 func (dt S3PutObjectAPIImp) PutObject(ctx context.Context,
 	params *s3.PutObjectInput,
 	optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+
 	output := &s3.PutObjectOutput{}
 
 	return output, nil
 }
 
-// This test isn't exactly a unit test as it depends on our Config object,
+// These tests aren't exactly a unit test as it depends on our Config object,
 // but it seems like a minor rule to break?...
-var cfg *config.Config
-
-func getConfig(t *testing.T) {
-	t.Helper()
-
-	cfg = &config.Config{}
-	cfg.Init()
-}
-
-func deleteObject(t *testing.T, objectName string) {
-
-	t.Helper()
-	getConfig(t)
-
-	acfg, err := awscfg.LoadDefaultConfig(context.TODO(),
-		awscfg.WithRegion(cfg.AwsRegion),
-	)
-	if err != nil {
-		t.Fatalf("error: %s", err)
-	}
-
-	client := s3.NewFromConfig(acfg)
-
-	input := &s3.DeleteObjectInput{
-		Bucket: aws.String(cfg.S3Bucket),
-		Key:    aws.String(objectName),
-	}
-
-	_, err = client.DeleteObject(context.TODO(), input)
-	if err != nil {
-		t.Fatalf("Got an error deleting item: %s", err)
-	}
-}
 
 func TestPutObject(t *testing.T) {
 	api := &S3PutObjectAPIImp{}
@@ -98,4 +66,40 @@ func TestIntegPutObject(t *testing.T) {
 
 	// teardown
 	deleteObject(t, keyObj)
+}
+
+// ================================== Helpers ==========================================
+
+var cfg *config.Config
+
+func getConfig(t *testing.T) {
+	t.Helper()
+
+	cfg = &config.Config{}
+	cfg.Init()
+}
+
+func deleteObject(t *testing.T, objectName string) {
+
+	t.Helper()
+	getConfig(t)
+
+	acfg, err := awscfg.LoadDefaultConfig(context.TODO(),
+		awscfg.WithRegion(cfg.AwsRegion),
+	)
+	if err != nil {
+		t.Fatalf("error: %s", err)
+	}
+
+	client := s3.NewFromConfig(acfg)
+
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(cfg.S3Bucket),
+		Key:    aws.String(objectName),
+	}
+
+	_, err = client.DeleteObject(context.TODO(), input)
+	if err != nil {
+		t.Fatalf("Got an error deleting item: %s", err)
+	}
 }

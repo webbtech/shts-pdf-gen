@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	estimateNum = 1011
+	estimateNum = 1191
 )
 
 // MongoSuite struct

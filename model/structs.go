@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PdfRequest struct {
+type DocRequest struct {
 	EstimateNumber *int    `bson:"number" json:"number" validate:"required"`
 	RequestType    *string `bson:"requestType" json:"requestType" validate:"required"`
 }

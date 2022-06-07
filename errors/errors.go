@@ -20,6 +20,8 @@ const (
 	// CodeBadInput represents a bad Lambda input error.
 	// API Gateway mapping:     400 Bad request
 	CodeBadInput = "BAD_INPUT"
+
+	CodeSuccess = "SUCCESS"
 )
 
 // StdError struct

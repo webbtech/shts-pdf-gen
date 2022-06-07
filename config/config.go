@@ -252,15 +252,15 @@ func (c *Config) setDBConnectString() {
 func (c *Config) setAWSConnectString() {
 
 	AWS_ACCESS_KEY_ID := os.Getenv("AWS_ACCESS_KEY_ID")
-	AWS_ACCESS_KEY := os.Getenv("AWS_ACCESS_KEY")
+	// AWS_ACCESS_KEY := os.Getenv("AWS_ACCESS_KEY")
 	AWS_SECRET_ACCESS_KEY := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	AWS_SESSION_TOKEN := os.Getenv("AWS_SESSION_TOKEN")
-	fmt.Printf("AWS_ACCESS_KEY: %+v\n", AWS_ACCESS_KEY)
-	fmt.Printf("AWS_SECRET_ACCESS_KEY: %+v\n", AWS_SECRET_ACCESS_KEY)
+	// fmt.Printf("AWS_ACCESS_KEY: %+v\n", AWS_ACCESS_KEY)
+	// fmt.Printf("AWS_SECRET_ACCESS_KEY: %+v\n", AWS_SECRET_ACCESS_KEY)
 
 	// mongodb+srv://<AWS access key>:<AWS secret key>@cluster0.q0zlz.mongodb.net/myFirstDatabase?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:<session token (for AWS IAM Roles)>
 	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:%s", AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, defs.DbCluster, defs.DbName, "%24", AWS_SESSION_TOKEN)
-	fmt.Printf("c.DbConnectString =: %+v\n", c.DbConnectString)
+	// fmt.Printf("c.DbConnectString =: %+v\n", c.DbConnectString)
 
 	// mongodb+srv://ASIAV5T2ZJR5XVVNKQNM:kArqB36wJtTlNqA+kAPgnHS96OKsOcGoB1J4PeAV@cluster0.q0zlz.mongodb.net/shts-test?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:
 }
