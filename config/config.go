@@ -63,19 +63,19 @@ func (c *Config) Init() (err error) {
 		return err
 	}
 
-	if err = c.setSSMParams(); err != nil {
+	/* if err = c.setSSMParams(); err != nil {
 		return err
-	}
+	} */
 
 	if err = c.setEnvVars(); err != nil {
 		return err
 	}
 
-	// TODO: complete connection with AWS
+	// TODO: determine whether we actually need a local db connection for development etc.
 	// if c.Stage == ProdEnv {
-	// c.setAWSConnectString()
+	c.setAWSConnectString()
 	// } else {
-	c.setDBConnectString()
+	// c.setDBConnectString()
 	// }
 
 	c.setCompanyInfo()
@@ -245,24 +245,13 @@ func (c *Config) setSSMParams() (err error) {
 // setDBConnectString Build a connection string to MongoDB Atlas
 // Result should look like: mongodb+srv://<defs.DbUser>:<defs.DbPassword>@<defs.DbCluster>/<defs.DbName>?retryWrites=true&w=majority
 func (c *Config) setDBConnectString() {
-	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", defs.DbUser, defs.DbPassword, defs.DbCluster, defs.DbName)
+	// c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", defs.DbUser, defs.DbPassword, defs.DbCluster, defs.DbName)
 }
 
-// Result should look like: mongodb+srv://<AWS access key>:<AWS secret key>@<defs.DbCluster>/<defs.DbName>?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:<AWS_SESSION_TOKEN>
+// Result should look like: mongodb+srv://<defs.DbCluster>/<defs.DbName>?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority
 func (c *Config) setAWSConnectString() {
-
-	AWS_ACCESS_KEY_ID := os.Getenv("AWS_ACCESS_KEY_ID")
-	// AWS_ACCESS_KEY := os.Getenv("AWS_ACCESS_KEY")
-	AWS_SECRET_ACCESS_KEY := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	AWS_SESSION_TOKEN := os.Getenv("AWS_SESSION_TOKEN")
-	// fmt.Printf("AWS_ACCESS_KEY: %+v\n", AWS_ACCESS_KEY)
-	// fmt.Printf("AWS_SECRET_ACCESS_KEY: %+v\n", AWS_SECRET_ACCESS_KEY)
-
-	// mongodb+srv://<AWS access key>:<AWS secret key>@cluster0.q0zlz.mongodb.net/myFirstDatabase?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:<session token (for AWS IAM Roles)>
-	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:%s", AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, defs.DbCluster, defs.DbName, "%24", AWS_SESSION_TOKEN)
-	// fmt.Printf("c.DbConnectString =: %+v\n", c.DbConnectString)
-
-	// mongodb+srv://ASIAV5T2ZJR5XVVNKQNM:kArqB36wJtTlNqA+kAPgnHS96OKsOcGoB1J4PeAV@cluster0.q0zlz.mongodb.net/shts-test?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:
+	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", defs.DbCluster, defs.DbName, "%24")
+	fmt.Printf("connect string: %+v\n", c.DbConnectString)
 }
 
 func (c *Config) setCompanyInfo() {

@@ -65,15 +65,16 @@ Resources:
               Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
   
-      Domain:
-        DomainName: !Ref ParamCustomDomainName
-        CertificateArn: !Ref ParamCertificateArn
-        EndpointConfiguration: "REGIONAL"
-        Route53:
-          HostedZoneId: !Ref ParamHostedZoneId
-          EvaluateTargetHealth: true
-          DistributionDomainName:
-            Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+      # TODO: uncomment for production
+      # Domain:
+      #   DomainName: !Ref ParamCustomDomainName
+      #   CertificateArn: !Ref ParamCertificateArn
+      #   EndpointConfiguration: "REGIONAL"
+      #   Route53:
+      #     HostedZoneId: !Ref ParamHostedZoneId
+      #     EvaluateTargetHealth: true
+      #     DistributionDomainName:
+      #       Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
 
   PDFGeneratorFunction:
     Type: AWS::Serverless::Function
@@ -85,11 +86,20 @@ Resources:
         - x86_64
       Tracing: Active
       Role: !GetAtt PDFGeneratorRole.Arn
-      Timeout: 20 #keep at 20 for production
+      Timeout: 20 # keep at 20 for production
       MemorySize: 128
       Environment:
         Variables:
           Stage: production
+      VpcConfig:
+        SubnetIds:
+          - subnet-015e4e939f9bb2f89
+          - subnet-0e146cd98e8e15e25
+          - subnet-0edd64d562d0a0a03
+        SecurityGroupIds:
+          - sg-00223abd5286c9b96
+      Tags:
+        BillTo: !Ref ParamBillTo
       
       Events:
         Ping:
@@ -124,9 +134,6 @@ Resources:
             RestApiId: !Ref RestApi
             Auth:
               ApiKeyRequired: false
-              
-      Tags:
-        BillTo: !Ref ParamBillTo
 
   PDFGeneratorRole:
     Type: AWS::IAM::Role
@@ -141,15 +148,6 @@ Resources:
           Action:
           - sts:AssumeRole
       Policies:
-      - PolicyName: FunctionSSMAccess
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - ssm:GetParametersByPath
-            Resource:
-              Fn::Sub: arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ParamSSMPath}
       - PolicyName: FunctionLogAccess
         PolicyDocument:
           Version: '2012-10-17'
@@ -169,16 +167,6 @@ Resources:
             - xray:PutTraceSegments
             - xray:PutTelemetryRecords
             Resource: '*'
-      - PolicyName: FunctionKMSAccess
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - kms:Decrypt
-            - kms:DescribeKey
-            Resource:
-              Fn::Sub: arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${ParamKMSKeyID}
       - PolicyName: FunctionS3Access
         PolicyDocument:
           Version: '2012-10-17'
@@ -188,7 +176,16 @@ Resources:
             - s3:*
             Resource: 
               Fn::Sub: arn:aws:s3:::${ParamStorageBucket}/*
-
+      - PolicyName: FunctionVPCAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DeleteNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            Resource: '*'
 
 Outputs:
   ApiId:
@@ -210,6 +207,9 @@ Outputs:
   PDFGeneratorFunction:
     Description: "PDFGenerator Lambda function ARN"
     Value: !GetAtt PDFGeneratorFunction.Arn
+  PDFGeneratorIAMRoleArn:
+    Description: "IAM Role ARN"
+    Value: !GetAtt PDFGeneratorRole.Arn
   ApiKey:
     Description: "You can find your API Key in the AWS console: (Put in the request HEADER as 'x-api-key')"
     Value: !Sub "https://console.aws.amazon.com/apigateway/home?region=${AWS::Region}#/api-keys/${RestApi}"

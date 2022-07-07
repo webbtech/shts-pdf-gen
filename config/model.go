@@ -10,8 +10,6 @@ type defaults struct {
 	CoPhone    string `yaml:"CoPhone"`
 	DbCluster  string `yaml:"DbCluster"`
 	DbName     string `yaml:"DbName"`
-	DbPassword string `yaml:"DbPassword"`
-	DbUser     string `yaml:"DbUser"`
 	HST        string `yaml:"HST"`
 	LogoURI    string `yaml:"LogoURI"`
 	S3Bucket   string `yaml:"S3Bucket"`
