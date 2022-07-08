@@ -15,6 +15,6 @@ In an attempt to balance simplicity with testablity etc. this layout seems to wo
 An example of accessing atlas from a Realm function:
 
 ``` javascript
-const db = context.services.get("shts-test").db("shts-test").collection("Estimate");
+const db = context.services.get("mongodb-atlas").db("shorthills").collection("Estimate");
 db.updateOne({_id: _id}, {$set: {'updatedAt': new Date()}});
 ```

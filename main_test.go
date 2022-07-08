@@ -10,8 +10,12 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
+// NOTE: this test requires that config defaults are uploaded to s3, which isn't ideal for unit testing unfortunately
+// This also then means that the db connection is to the production db
+
 func TestEnvVars(t *testing.T) {
 	os.Setenv("PARAM1", "VALUE12")
+
 	t.Run("Successful ping", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(200)
@@ -92,7 +96,6 @@ func TestPostHandler(t *testing.T) {
 	if err != nil {
 		t.Fatal("Everything should be ok")
 	}
-
 }
 
 func TestDeleteHandler(t *testing.T) {

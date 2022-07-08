@@ -1,6 +1,7 @@
 package mongodb
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -21,9 +22,12 @@ type MongoSuite struct {
 
 func (suite *MongoSuite) SetupTest() {
 	os.Setenv("Stage", "test")
-	suite.cfg = &config.Config{}
+	suite.cfg = &config.Config{IsDefaultsLocal: true}
+	suite.cfg.DefaultsFilePath = "../config"
 	err := suite.cfg.Init()
-	suite.NoError(err)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 }
 
 func (suite *MongoSuite) TestNewDb() {

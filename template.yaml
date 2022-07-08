@@ -66,15 +66,15 @@ Resources:
               Access-Control-Allow-Headers: "'*'"
   
       # TODO: uncomment for production
-      # Domain:
-      #   DomainName: !Ref ParamCustomDomainName
-      #   CertificateArn: !Ref ParamCertificateArn
-      #   EndpointConfiguration: "REGIONAL"
-      #   Route53:
-      #     HostedZoneId: !Ref ParamHostedZoneId
-      #     EvaluateTargetHealth: true
-      #     DistributionDomainName:
-      #       Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+      Domain:
+        DomainName: !Ref ParamCustomDomainName
+        CertificateArn: !Ref ParamCertificateArn
+        EndpointConfiguration: "REGIONAL"
+        Route53:
+          HostedZoneId: !Ref ParamHostedZoneId
+          EvaluateTargetHealth: true
+          DistributionDomainName:
+            Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
 
   PDFGeneratorFunction:
     Type: AWS::Serverless::Function

@@ -36,28 +36,24 @@ dev-cloud:
 		ParamCertificateArn=$(CERTIFICATE_ARN) \
 		ParamCustomDomainName=$(CUSTOM_DOMAIN_NAME) \
 		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
-		ParamKMSKeyID=$(KMS_KEY_ID) \
-		ParamSSMPath=$(SSM_PARAM_PATH) \
 		ParamStorageBucket=${S3_STORAGE_BUCKET}
 
 dev-cloud-watch:
-	sam sync --stack-name $(STACK_NAME) --watch --profile $(PROFILE) \
+	@ sam sync --stack-name $(STACK_NAME) --watch --profile $(PROFILE) \
 	--s3-prefix $(AWS_DEPLOYMENT_PREFIX) \
 	--parameter-overrides \
 		ParamBillTo=$(BILLTO) \
 		ParamCertificateArn=$(CERTIFICATE_ARN) \
 		ParamCustomDomainName=$(CUSTOM_DOMAIN_NAME) \
 		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
-		ParamKMSKeyID=$(KMS_KEY_ID) \
-		ParamSSMPath=$(SSM_PARAM_PATH) \
 		ParamStorageBucket=${S3_STORAGE_BUCKET}
 
 tail-logs:
-	sam logs -n PDFGeneratorFunction --profile $(PROFILE) \
+	@ sam logs -n PDFGeneratorFunction --profile $(PROFILE) \
 	--stack-name $(STACK_NAME) --tail
 
 tail-logs-trace:
-	sam logs -n PDFGeneratorFunction --profile $(PROFILE) \
+	@ sam logs -n PDFGeneratorFunction --profile $(PROFILE) \
 	--stack-name $(STACK_NAME) --tail --include-traces
 
 validate:
