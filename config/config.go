@@ -9,19 +9,16 @@ import (
 	"os"
 	"path"
 	"reflect"
-	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ssm"
 	"gopkg.in/yaml.v2"
 )
 
 // Config struct
 type Config struct {
+	companyInfo *companyInfo
 	config
-	IsDefaultsLocal bool
-	companyInfo     *companyInfo
+	DefaultsFilePath string
+	IsDefaultsLocal  bool
 }
 
 // StageEnvironment string
@@ -63,20 +60,15 @@ func (c *Config) Init() (err error) {
 		return err
 	}
 
-	if err = c.setSSMParams(); err != nil {
-		return err
-	}
-
 	if err = c.setEnvVars(); err != nil {
 		return err
 	}
 
-	// TODO: complete connection with AWS
-	// if c.Stage == ProdEnv {
-	// c.setAWSConnectString()
-	// } else {
-	c.setDBConnectString()
-	// }
+	if c.Stage == TestEnv {
+		c.setDBConnectString()
+	} else {
+		c.setAWSConnectString()
+	}
 
 	c.setCompanyInfo()
 	c.setFinal()
@@ -90,6 +82,7 @@ func (c *Config) GetStageEnv() StageEnvironment {
 }
 
 // SetStageEnv method
+// TODO: this doesn't work as expected
 func (c *Config) SetStageEnv(env string) (err error) {
 	defs.Stage = env
 	return c.validateStage()
@@ -117,7 +110,14 @@ func (c *Config) setDefaults() (err error) {
 	var file []byte
 	if c.IsDefaultsLocal == true { // DefaultsRemote is explicitly set to true
 
-		dir, _ := os.Getwd()
+		var dir string
+
+		if c.DefaultsFilePath != "" {
+			dir = c.DefaultsFilePath
+		} else {
+			dir, _ = os.Getwd()
+		}
+
 		defaultsFilePath = path.Join(dir, defaultFileName)
 		if _, err = os.Stat(defaultsFilePath); os.IsNotExist(err) {
 			return err
@@ -203,66 +203,16 @@ func (c *Config) setEnvVars() (err error) {
 	return err
 }
 
-func (c *Config) setSSMParams() (err error) {
-
-	s := []string{"", string(c.GetStageEnv()), defs.SsmPath}
-	paramPath := aws.String(strings.Join(s, "/"))
-
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(defs.AwsRegion),
-	})
-	if err != nil {
-		return err
-	}
-
-	svc := ssm.New(sess)
-	res, err := svc.GetParametersByPath(&ssm.GetParametersByPathInput{
-		Path:           paramPath,
-		WithDecryption: aws.Bool(true),
-	})
-	if err != nil {
-		return err
-	}
-
-	paramLen := len(res.Parameters)
-	if paramLen == 0 {
-		err = fmt.Errorf("Error fetching ssm params, total number found: %d", paramLen)
-	}
-
-	// Get struct keys so we can test before attempting to set
-	t := reflect.ValueOf(defs).Elem()
-	for _, r := range res.Parameters {
-		paramName := strings.Split(*r.Name, "/")[3]
-		structKey := t.FieldByName(paramName)
-		if structKey.IsValid() {
-			structKey.Set(reflect.ValueOf(*r.Value))
-		}
-	}
-
-	return err
-}
-
 // setDBConnectString Build a connection string to MongoDB Atlas
+// Currently we're only using this for local testing
 // Result should look like: mongodb+srv://<defs.DbUser>:<defs.DbPassword>@<defs.DbCluster>/<defs.DbName>?retryWrites=true&w=majority
 func (c *Config) setDBConnectString() {
-	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", defs.DbUser, defs.DbPassword, defs.DbCluster, defs.DbName)
+	c.DbConnectString = fmt.Sprintf("mongodb://%s/%s?retryWrites=true&w=majority", defs.DbLocalHost, defs.DbName)
 }
 
-// Result should look like: mongodb+srv://<AWS access key>:<AWS secret key>@<defs.DbCluster>/<defs.DbName>?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:<AWS_SESSION_TOKEN>
+// Result should look like: mongodb+srv://<defs.DbCluster>/<defs.DbName>?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority
 func (c *Config) setAWSConnectString() {
-
-	AWS_ACCESS_KEY_ID := os.Getenv("AWS_ACCESS_KEY_ID")
-	// AWS_ACCESS_KEY := os.Getenv("AWS_ACCESS_KEY")
-	AWS_SECRET_ACCESS_KEY := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	AWS_SESSION_TOKEN := os.Getenv("AWS_SESSION_TOKEN")
-	// fmt.Printf("AWS_ACCESS_KEY: %+v\n", AWS_ACCESS_KEY)
-	// fmt.Printf("AWS_SECRET_ACCESS_KEY: %+v\n", AWS_SECRET_ACCESS_KEY)
-
-	// mongodb+srv://<AWS access key>:<AWS secret key>@cluster0.q0zlz.mongodb.net/myFirstDatabase?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:<session token (for AWS IAM Roles)>
-	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:%s", AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, defs.DbCluster, defs.DbName, "%24", AWS_SESSION_TOKEN)
-	// fmt.Printf("c.DbConnectString =: %+v\n", c.DbConnectString)
-
-	// mongodb+srv://ASIAV5T2ZJR5XVVNKQNM:kArqB36wJtTlNqA+kAPgnHS96OKsOcGoB1J4PeAV@cluster0.q0zlz.mongodb.net/shts-test?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority&authMechanismProperties=AWS_SESSION_TOKEN:
+	c.DbConnectString = fmt.Sprintf("mongodb+srv://%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", defs.DbCluster, defs.DbName, "%24")
 }
 
 func (c *Config) setCompanyInfo() {

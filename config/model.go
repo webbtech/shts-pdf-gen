@@ -1,22 +1,21 @@
 package config
 
 type defaults struct {
-	AwsRegion  string `yaml:"AwsRegion"`
-	CoAddress1 string `yaml:"CoAddress1"`
-	CoAddress2 string `yaml:"CoAddress2"`
-	CoDomain   string `yaml:"CoDomain"`
-	CoEmail    string `yaml:"CoEmail"`
-	CoName     string `yaml:"CoName"`
-	CoPhone    string `yaml:"CoPhone"`
-	DbCluster  string `yaml:"DbCluster"`
-	DbName     string `yaml:"DbName"`
-	DbPassword string `yaml:"DbPassword"`
-	DbUser     string `yaml:"DbUser"`
-	HST        string `yaml:"HST"`
-	LogoURI    string `yaml:"LogoURI"`
-	S3Bucket   string `yaml:"S3Bucket"`
-	SsmPath    string `yaml:"SsmPath"`
-	Stage      string `yaml:"Stage"`
+	AwsRegion   string `yaml:"AwsRegion"`
+	CoAddress1  string `yaml:"CoAddress1"`
+	CoAddress2  string `yaml:"CoAddress2"`
+	CoDomain    string `yaml:"CoDomain"`
+	CoEmail     string `yaml:"CoEmail"`
+	CoName      string `yaml:"CoName"`
+	CoPhone     string `yaml:"CoPhone"`
+	DbCluster   string `yaml:"DbCluster"`
+	DbLocalHost string `yaml:"DbLocalHost"`
+	DbName      string `yaml:"DbName"`
+	HST         string `yaml:"HST"`
+	LogoURI     string `yaml:"LogoURI"`
+	S3Bucket    string `yaml:"S3Bucket"`
+	SsmPath     string `yaml:"SsmPath"`
+	Stage       string `yaml:"Stage"`
 }
 
 type config struct {
