@@ -11,6 +11,7 @@ var cfg *Config
 
 func TestInitConfig(t *testing.T) {
 	t.Run("Successful Init with local file", func(t *testing.T) {
+		os.Setenv("Stage", "test")
 		cfg = &Config{IsDefaultsLocal: true}
 		err := cfg.Init()
 		if err != nil {
@@ -19,6 +20,7 @@ func TestInitConfig(t *testing.T) {
 	})
 
 	t.Run("Successful Init with remote file", func(t *testing.T) {
+		os.Setenv("Stage", "prod")
 		cfg = &Config{}
 		err := cfg.Init()
 		if err != nil {
@@ -103,33 +105,20 @@ func TestValidateStage(t *testing.T) {
 	})
 }
 
-func TestSetSSMParams(t *testing.T) {
-	cfg = &Config{}
-	cfg.setDefaults()
-
-	t.Run("DBName is accurate", func(t *testing.T) {
-		err := cfg.setSSMParams()
-		if err != nil {
-			t.Fatalf("Expected null error, received: %s", err)
-		}
-
-		if defs.DbName == "" {
-			t.Fatalf("Expected defs.DbName to have value")
-		}
-		if defs.DbPassword == "" {
-			t.Fatalf("Expected defs.DbPassword to have value")
-		}
-
-	})
-}
-
 func TestSetDbConnectString(t *testing.T) {
-	cfg = &Config{}
+	cfg = &Config{IsDefaultsLocal: true}
 	cfg.setDefaults()
-	cfg.setSSMParams()
 
-	t.Run("DbConnectionString is properly set", func(t *testing.T) {
-		expectString := fmt.Sprintf("mongodb+srv://%s:%s@%s/%s?retryWrites=true&w=majority", defs.DbUser, defs.DbPassword, defs.DbCluster, defs.DbName)
+	t.Run("DbConnectionString for AWS IAM", func(t *testing.T) {
+		expectString := fmt.Sprintf("mongodb+srv://%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", defs.DbCluster, defs.DbName, "%24")
+		cfg.setAWSConnectString()
+		if expectString != cfg.DbConnectString {
+			t.Fatalf("DbConnectString should be: %s, have: %s", expectString, cfg.DbConnectString)
+		}
+	})
+
+	t.Run("DbConnectionString for localhost", func(t *testing.T) {
+		expectString := fmt.Sprintf("mongodb://%s/%s?retryWrites=true&w=majority", defs.DbLocalHost, defs.DbName)
 		cfg.setDBConnectString()
 		if expectString != cfg.DbConnectString {
 			t.Fatalf("DbConnectString should be: %s, have: %s", expectString, cfg.DbConnectString)
@@ -156,7 +145,7 @@ func TestSetCompanyInfo(t *testing.T) {
 func TestPublicGetters(t *testing.T) {
 	cfg = &Config{}
 	cfg.setDefaults()
-	cfg.setSSMParams()
+	// cfg.setSSMParams()
 
 	t.Run("GetDbName", func(t *testing.T) {
 		if cfg.GetDbName() != cfg.config.DbName {

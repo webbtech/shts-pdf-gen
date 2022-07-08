@@ -1,6 +1,7 @@
 package pdf
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -30,12 +31,17 @@ type PdfSuite struct {
 func (s *PdfSuite) SetupTest() {
 	os.Setenv("Stage", "test")
 
-	s.cfg = &config.Config{}
+	s.cfg = &config.Config{IsDefaultsLocal: true}
+	s.cfg.DefaultsFilePath = "../config"
 	err := s.cfg.Init()
-	s.NoError(err)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 
 	s.db, err = mongodb.NewDb(s.cfg.GetMongoConnectString(), s.cfg.GetDbName())
-	s.NoError(err)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 
 	s.estimateRecord, err = s.db.FetchEstimate(estimateNum)
 	s.NoError(err)

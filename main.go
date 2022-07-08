@@ -23,6 +23,7 @@ var (
 
 // init isn't called for each invocation, so we take advantage and only setup cfg and db for (I'm assuming) cold starts
 func init() {
+
 	log.Info("calling config.Config.init in main")
 	cfg = &config.Config{}
 	err := cfg.Init()
