@@ -65,7 +65,6 @@ Resources:
               Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
   
-      # TODO: uncomment for production
       Domain:
         DomainName: !Ref ParamCustomDomainName
         CertificateArn: !Ref ParamCertificateArn
