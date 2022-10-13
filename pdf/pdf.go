@@ -129,15 +129,19 @@ func cleanStr(text string) string {
 
 func setItemRowHeight(item model.EstimateItem, cellWidth int, compare bool) float64 {
 
+	var numLines = 0.0
 	descripLen := len(item.Description)
 	longestStr := descripLen
+
 	if compare {
 		notesLen := len(item.Notes)
 		if notesLen > descripLen {
 			longestStr = notesLen
 		}
 	}
-	numLines := float64(longestStr / cellWidth)
+	if longestStr > cellWidth+3 { // we don't need a line break if the string is only marginally longer
+		numLines = float64(longestStr / cellWidth)
+	}
 
 	return (numLines * defLnHt) + 2
 }

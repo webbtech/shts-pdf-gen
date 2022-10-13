@@ -173,7 +173,7 @@ func (i *invoice) items() {
 
 	for _, i := range record.Items {
 
-		rowHt := setItemRowHeight(i, 95, false)
+		rowHt := setItemRowHeight(i, 98, false)
 
 		file.Ln(3)
 		xPos = file.GetX()
@@ -189,11 +189,6 @@ func (i *invoice) items() {
 
 		file.Ln(rowHt)
 		file.CellFormat(0, 4, "", "B", 1, "", false, 0, "")
-
-		/* if (idx+1)%16 == 0 { // TODO: test this
-			file.AddPage()
-			file.CellFormat(0, 6, "", "B", 1, "", false, 0, "")
-		} */
 	}
 }
 

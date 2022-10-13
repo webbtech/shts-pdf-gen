@@ -5,13 +5,10 @@ import (
 
 	"github.com/jung-kurt/gofpdf"
 	log "github.com/sirupsen/logrus"
-	"github.com/webbtech/shts-pdf-gen/model"
 )
 
 type estimate struct {
-	file   *gofpdf.Fpdf
-	record *model.Estimate
-	p      *Pdf
+	p *Pdf
 }
 
 const (
@@ -187,7 +184,7 @@ func (e *estimate) items() {
 
 	for _, i := range record.Items {
 
-		rowHt := setItemRowHeight(i, 44, true)
+		rowHt := setItemRowHeight(i, 41, true)
 
 		file.Ln(3)
 		xPos = file.GetX()
@@ -232,7 +229,7 @@ func (e *estimate) totals() {
 	file.SetFont("Arial", "B", defFontSize)
 	file.CellFormat(0, 6, "JOB NOTES", "", 1, "T", false, 0, "")
 	file.SetFont("Arial", "", defFontSize)
-	file.MultiCell(120, defLnHt, record.JobNotes, "", "T", false)
+	file.MultiCell(120, defLnHt, cleanStr(record.JobNotes), "", "T", false)
 
 	// totals section
 	yPos = file.GetY()
