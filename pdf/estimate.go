@@ -296,4 +296,9 @@ func (e *estimate) footer() {
 	file.CellFormat(0, defLnHt, "Payable to Shorthills Tree Service", "", 1, "", false, 0, "")
 	file.CellFormat(0, defLnHt, fmt.Sprintf("HST #: %s", e.p.cfg.GetCompanyInfo().HST), "", 1, "", false, 0, "")
 	file.CellFormat(0, defLnHt, "Incorporation: 2187989 Ontario Inc.", "", 1, "", false, 0, "")
+
+	// This should be seasonal
+	file.SetFont("Arial", "B", 11.5)
+	file.Ln(2)
+	file.CellFormat(0, defLnHt, "Ask us about our WINTER DISCOUNTS!", "", 1, "", false, 0, "")
 }
