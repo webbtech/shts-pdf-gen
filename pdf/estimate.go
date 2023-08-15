@@ -189,13 +189,23 @@ func (e *estimate) items() {
 		file.Ln(3)
 		xPos = file.GetX()
 		yPos = file.GetY()
+
+		if yPos >= 245 {
+			file.AddPage()
+			file.CellFormat(0, 4, "", "T", 1, "", false, 0, "")
+			yPos = file.GetY()
+		}
+
 		file.MultiCell(descripW, defLnHt, cleanStr(i.Description), "", "T", false)
+
+		// move to notes column
 		file.MoveTo(xPos+5+descripW, yPos)
 
-		xPos = file.GetX()
-
+		// record the current position before moving to Qty column
+		xPos = file.GetX() + notesW
 		file.MultiCell(notesW, defLnHt, cleanStr(i.Notes), "", "T", false)
-		file.MoveTo(xPos+notesW, yPos)
+		file.SetXY(xPos, yPos)
+
 		file.CellFormat(8, defLnHt, fmt.Sprintf("%d", i.Qty), "", 0, "TC", false, 0, "")
 		file.CellFormat(16, defLnHt, fmt.Sprintf("%.2f", i.Cost), "", 0, "TR", false, 0, "")
 		file.SetFont("Arial", "B", defFontSize)

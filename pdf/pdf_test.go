@@ -14,7 +14,9 @@ import (
 const (
 	// estimateNum = 1177 // estimate with 11 different items and several unwanted special characters
 	// estimateNum = 1191 // estimate with several special characters and description
-	estimateNum = 1475 // estimate with 2 pages of items
+	// estimateNum = 1475 // estimate with 2 pages of items
+	// estimateNum = 1965 // estimate with 2 pages of items
+	estimateNum = 1978 // estimate with 2 pages of items
 )
 
 // to test and preview, do something like: go test -run ^TestPdfSuite$ github.com/webbtech/shts-pdf-gen/pdf && open -a Preview ./tmp/est-1177.pdf
